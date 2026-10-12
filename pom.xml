@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.kanakani</groupId>
+  <artifactId>kanakani</artifactId>
+  <version>0.1.0</version>
+  <packaging>war</packaging>
+  <name>Kanakani</name>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <failOnMissingWebXml>false</failOnMissingWebXml>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.web</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.3</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>kanakani</finalName>
+    <!-- One folder per kind of file. -->
+    <sourceDirectory>java</sourceDirectory>
+    <testSourceDirectory>tests</testSourceDirectory>
+    <resources>
+      <!-- Text for each language: messages.properties (English), messages_bn, messages_hi. -->
+      <resource>
+        <directory>i18n</directory>
+        <targetPath>i18n</targetPath>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <!-- No src/main/webapp: files are mapped from our own folders. -->
+          <warSourceDirectory>${project.basedir}/static-none</warSourceDirectory>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+          <webResources>
+            <resource>
+              <directory>jsp</directory>
+              <targetPath>WEB-INF/jsp</targetPath>
+            </resource>
+            <resource>
+              <directory>static</directory>
+              <targetPath>static</targetPath>
+            </resource>
+            <resource>
+              <directory>config</directory>
+              <includes><include>web.xml</include></includes>
+              <targetPath>WEB-INF</targetPath>
+            </resource>
+            <resource>
+              <directory>config</directory>
+              <includes><include>context.xml</include></includes>
+              <targetPath>META-INF</targetPath>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+
+      <!-- The self test is a plain main(), so it runs through exec, not surefire. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>self-test</id>
+            <phase>test</phase>
+            <goals><goal>java</goal></goals>
+            <configuration>
+              <mainClass>com.kanakani.SelfTest</mainClass>
+              <classpathScope>test</classpathScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

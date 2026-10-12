@@ -1,0 +1,1544 @@
+<title>Kanakani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=DM+Mono:wght@400;500&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one phone-width column (max 480px), tabs at the bottom, chats and rooms open as full-screen detail views, sheets slide up over them. */
+:root {
+  --bg: #F2F1F9;
+  --surface: #FFFFFF;
+  --surface-2: #E7E5F4;
+  --fg: #17162B;
+  --muted: #5F5C7E;
+  --line: #D9D6EC;
+  --accent: #F7B500;
+  --on-accent: #17162B;
+  --flame: #E08A00;
+  --danger: #C81E3A;
+  --ok: #12805A;
+  --bubble-me: #17162B;
+  --on-bubble-me: #F2F1F9;
+  --bubble-them: #FFFFFF;
+  --av1: #6C5CE7;
+  --av2: #0F8B8D;
+  --av3: #D6457A;
+  --av4: #4C7BD9;
+  --font-display: 'Bagel Fat One', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #100F20;
+    --surface: #1A1933;
+    --surface-2: #242246;
+    --fg: #EEEDFB;
+    --muted: #A5A2C7;
+    --line: #2E2C54;
+    --flame: #F7B500;
+    --danger: #FF7A8D;
+    --ok: #4FD1A0;
+    --bubble-me: #F7B500;
+    --on-bubble-me: #17162B;
+    --bubble-them: #1A1933;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #100F20;
+  --surface: #1A1933;
+  --surface-2: #242246;
+  --fg: #EEEDFB;
+  --muted: #A5A2C7;
+  --line: #2E2C54;
+  --flame: #F7B500;
+  --danger: #FF7A8D;
+  --ok: #4FD1A0;
+  --bubble-me: #F7B500;
+  --on-bubble-me: #17162B;
+  --bubble-them: #1A1933;
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+.app {
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  border-inline: 1px solid var(--line);
+}
+#root { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+.screen { flex: 1; min-height: 0; overflow-y: auto; }
+.grow { flex: 1; min-width: 0; }
+
+/* top bar */
+.top {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.logo { font-family: 'Bagel Fat One', 'Trebuchet MS', system-ui, sans-serif; font-size: 24px; line-height: 1.2; letter-spacing: .01em; }
+/* The native name sits under the wordmark. No letter-spacing: it breaks Bengali joined letters apart. */
+.logo small { display: block; font-family: 'Noto Sans Bengali', 'Hind Siliguri', 'Noto Sans Devanagari', system-ui, sans-serif; font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--muted); letter-spacing: 0; margin-top: 1px; padding-left: 1px; }
+.obtop { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.langsel {
+  -webkit-appearance: none; appearance: none; flex: none;
+  font-family: 'Noto Sans Bengali', 'Noto Sans Devanagari', var(--font-body); font-size: 13px; font-weight: 600; line-height: 1.2;
+  color: var(--fg); background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23A5A2C7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 28px 7px 14px; cursor: pointer;
+}
+/* Bengali and Hindi: wide letter-spacing breaks joined letters, and the display font has no glyphs for them. */
+html[lang="bn"] *, html[lang="hi"] * { letter-spacing: normal !important; }
+html[lang="bn"] { --font-body: 'Noto Sans Bengali', 'Hind Siliguri', system-ui, sans-serif; --font-mono: 'Noto Sans Bengali', 'Hind Siliguri', system-ui, sans-serif; --font-display: 'Noto Sans Bengali', 'Hind Siliguri', system-ui, sans-serif; }
+html[lang="hi"] { --font-body: 'Noto Sans Devanagari', 'Hind Siliguri', system-ui, sans-serif; --font-mono: 'Noto Sans Devanagari', 'Hind Siliguri', system-ui, sans-serif; --font-display: 'Noto Sans Devanagari', 'Hind Siliguri', system-ui, sans-serif; }
+html[lang="bn"] h1, html[lang="hi"] h1, html[lang="bn"] h2, html[lang="hi"] h2 { font-weight: 700; line-height: 1.3; }
+html[lang="bn"] .name, html[lang="hi"] .name, html[lang="bn"] .big, html[lang="hi"] .big, html[lang="bn"] .pn, html[lang="hi"] .pn { font-family: 'Bagel Fat One', 'Trebuchet MS', system-ui, sans-serif; }
+html[lang="bn"] body, html[lang="hi"] body { line-height: 1.6; }
+html:is([lang="bn"], [lang="hi"]) :is(.label, .pill, .tab, .aliascard .cap, .msg .who, .meta, .mini, .badge, .vanished, .sysnote, .chipbtn, .status, .stat .t, .gpill, .act, .lock, .psnip, .pv small, .rval small, .hot .cap, .tagp, .stamp, .settle, .flow, .wx, .st) { font-size: 12.5px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 12px;
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+}
+.icon {
+  display: grid; place-items: center; width: 40px; height: 40px; flex: none;
+  border: 0; background: transparent; border-radius: 50%;
+}
+.icon:hover { background: var(--surface-2); }
+
+.label {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); padding: 18px 16px 8px;
+}
+.name { font-family: var(--font-display); font-size: 16px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+.sub .warn { color: var(--danger); }
+.sub .ok { color: var(--ok); }
+.days { font-family: var(--font-mono); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; color: var(--muted); white-space: nowrap; }
+.pill {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  background: var(--accent); color: var(--on-accent); padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+}
+.avatar {
+  width: 44px; height: 44px; flex: none; border-radius: 50%;
+  display: grid; place-items: center; color: #fff;
+  font-family: var(--font-display); font-size: 19px;
+}
+.avatar.sm { width: 32px; height: 32px; font-size: 14px; }
+
+/* list rows */
+.row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 13px 16px; text-align: left;
+  background: transparent; border: 0; border-bottom: 1px solid var(--line);
+}
+.row:hover { background: var(--surface); }
+.row .end { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+
+/* tabs */
+.tabs { display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--line); background: var(--bg); }
+.tab {
+  border: 0; background: transparent; padding: 13px 2px 12px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+  border-top: 3px solid transparent; margin-top: -1px;
+}
+.tab[aria-current="page"] { color: var(--fg); border-top-color: var(--accent); }
+
+/* buttons and fields */
+.btn {
+  background: var(--accent); color: var(--on-accent); border: 0; border-radius: 12px;
+  padding: 12px 18px; font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .55; cursor: default; }
+.btnrow { display: flex; gap: 10px; padding: 14px 16px 4px; flex-wrap: wrap; }
+.btnrow .btn { flex: 1 1 140px; }
+.field {
+  width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 12px; padding: 12px 14px; font-size: 16px;
+}
+.fieldlabel { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.err { color: var(--danger); font-size: 13px; min-height: 18px; margin: 6px 0 0; }
+.small { font-size: 13px; color: var(--muted); }
+
+/* onboarding */
+.onboard { padding: 28px 16px 32px; display: flex; flex-direction: column; gap: 18px; }
+.onboard h1 { font-family: var(--font-display); font-weight: 400; font-size: 44px; line-height: 1.02; margin: 6px 0 0; text-wrap: balance; }
+.lead { margin: 0; color: var(--muted); font-size: 16px; max-width: 46ch; }
+.numrow { display: flex; gap: 8px; }
+.prefix { font-family: var(--font-mono); display: grid; place-items: center; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.aliascard {
+  background: var(--accent); color: var(--on-accent); border-radius: 18px;
+  padding: 30px 18px 20px; position: relative; overflow: hidden;
+}
+.aliascard::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 12px;
+  background: repeating-conic-gradient(var(--on-accent) 0 25%, transparent 0 50%) 0 0 / 12px 12px;
+}
+.aliascard .big { font-family: var(--font-display); font-size: 32px; line-height: 1.08; overflow-wrap: anywhere; }
+.aliascard .cap { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; opacity: .8; }
+.seal { font-family: var(--font-mono); font-size: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.seal b { font-weight: 500; letter-spacing: .08em; word-break: break-all; }
+.facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.facts li { padding-left: 14px; border-left: 3px solid var(--accent); font-size: 14px; }
+
+/* chat */
+.detail { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+.msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: filter .15s; }
+.detail.blackout .msgs { filter: blur(20px) brightness(.25); pointer-events: none; }
+.msg {
+  max-width: 84%; padding: 10px 12px; border-radius: 16px; line-height: 1.4; overflow-wrap: anywhere;
+  user-select: none; -webkit-user-select: none; animation: rise .18s ease-out;
+}
+@keyframes rise { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+.msg.them { align-self: flex-start; background: var(--bubble-them); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.msg.me { align-self: flex-end; background: var(--bubble-me); color: var(--on-bubble-me); border-bottom-right-radius: 4px; }
+.msg.sealed {
+  background: var(--surface-2); border: 1.5px dashed var(--muted); color: var(--fg);
+  font-family: var(--font-mono); font-size: 12px; text-align: left;
+}
+.msg .who { font-family: var(--font-mono); font-size: 11px; opacity: .8; margin-bottom: 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.msg .who .days { color: inherit; }
+.bar { height: 3px; background: rgba(127,127,160,.3); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: var(--accent); }
+.msg.me .bar i { background: currentColor; }
+.meta { font-family: var(--font-mono); font-size: 11px; opacity: .85; margin-top: 7px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mini {
+  font-family: var(--font-mono); font-size: 11px; background: transparent; color: inherit;
+  border: 1px solid currentColor; border-radius: 999px; padding: 3px 10px;
+}
+.mini.solid { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.msg.me .mini.solid { background: var(--on-bubble-me); color: var(--bubble-me); border-color: var(--on-bubble-me); }
+.badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; background: var(--fg); color: var(--bg); padding: 3px 8px; border-radius: 999px; }
+.msg.me .badge { background: var(--on-bubble-me); color: var(--bubble-me); }
+.vanished { align-self: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+.sysnote { align-self: center; font-family: var(--font-mono); font-size: 11px; color: var(--danger); text-align: center; }
+.star { border: 0; background: transparent; padding: 2px; display: inline-grid; place-items: center; }
+.empty { color: var(--muted); text-align: center; padding: 40px 24px; }
+
+.composer { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+.composer .field { border-radius: 999px; flex: 1; min-width: 0; }
+.send { width: 46px; height: 46px; flex: none; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; }
+
+.chips { display: flex; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.chipbtn { flex: none; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 6px 14px; font-family: var(--font-mono); font-size: 12px; }
+.chipbtn[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+/* sheets */
+.scrim { position: absolute; inset: 0; background: rgba(10, 9, 24, .6); display: flex; align-items: flex-end; z-index: 20; }
+.sheet {
+  width: 100%; background: var(--surface); border-top-left-radius: 20px; border-top-right-radius: 20px;
+  padding: 20px 16px 24px; max-height: 88%; overflow-y: auto; display: grid; gap: 16px;
+  animation: up .2s ease-out;
+}
+@keyframes up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+.sheet h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.sheet p { margin: 0; }
+.line { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.line > div { min-width: 0; }
+.switch { width: 48px; height: 28px; flex: none; border-radius: 999px; border: 0; background: var(--line); position: relative; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.switch[aria-checked="true"] { background: var(--accent); }
+.switch[aria-checked="true"]::after { transform: translateX(20px); }
+.linkbox { font-family: var(--font-mono); font-size: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; overflow-wrap: anywhere; user-select: all; }
+.status { font-family: var(--font-mono); font-size: 12px; }
+.status.warn { color: var(--danger); }
+.status.ok { color: var(--ok); }
+
+.toast {
+  position: absolute; left: 16px; right: 16px; bottom: 76px; z-index: 30;
+  background: var(--fg); color: var(--bg); padding: 11px 14px; border-radius: 12px; font-size: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+}
+
+/* me */
+.mepad { padding: 16px; display: grid; gap: 16px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat { border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 12px 14px; }
+.stat .n { font-family: var(--font-display); font-size: 34px; line-height: 1.1; }
+.stat .t { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.members .row { cursor: default; }
+.members .row:hover { background: transparent; }
+.rank { font-family: var(--font-mono); font-size: 12px; width: 18px; color: var(--muted); flex: none; }
+
+/* gender */
+.gpill {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  border: 1px solid var(--line); color: var(--muted); padding: 2px 7px; border-radius: 999px; white-space: nowrap; flex: none;
+}
+.radios { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.radio { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 14px; font-size: 14px; }
+.radio[aria-checked="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+/* feed */
+.pcompose { margin: 14px 16px 4px; padding: 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; display: grid; gap: 10px; }
+.pcompose textarea { resize: none; border-radius: 12px; }
+.lockline { display: flex; align-items: center; gap: 6px; margin: 0; }
+.post { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.phead { display: flex; align-items: center; gap: 10px; }
+.pname { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ptext { margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+.pfoot { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.act {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px; border: 0; background: transparent;
+  border-radius: 999px; font-family: var(--font-mono); font-size: 12px; color: var(--muted);
+}
+.act:hover { background: var(--surface-2); }
+.act[aria-pressed="true"] { color: var(--danger); }
+.act:disabled, .act.static { cursor: default; opacity: .8; background: transparent; }
+.lock { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; margin-left: auto; }
+
+/* ranks */
+.standing { margin: 14px 16px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); font-size: 14px; }
+.critnote { margin: 12px 16px 0; color: var(--muted); font-size: 13px; }
+.podium { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 8px; align-items: end; padding: 20px 16px 0; }
+.pod { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; min-width: 0; }
+.pn { font-family: var(--font-display); font-size: 13px; line-height: 1.15; overflow-wrap: anywhere; }
+.psnip { font-size: 11px; color: var(--muted); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pv { font-family: var(--font-mono); font-size: 13px; margin-top: 2px; }
+.pv small, .rval small { font-size: 10px; color: var(--muted); margin-left: 3px; letter-spacing: .05em; }
+.stand { width: 100%; border-radius: 10px 10px 0 0; display: grid; place-items: center; font-family: var(--font-display); font-size: 30px; background: var(--surface-2); margin-top: 6px; }
+.p1 .stand { height: 92px; background: var(--accent); color: var(--on-accent); }
+.p2 .stand { height: 68px; }
+.p3 .stand { height: 52px; }
+.rlist { border-top: 1px solid var(--line); }
+.rrow { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.rrow.you { background: var(--surface-2); }
+.rtop { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.rtop .name { flex: 0 1 auto; min-width: 0; }
+.rval { font-family: var(--font-mono); font-size: 14px; text-align: right; white-space: nowrap; flex: none; }
+.meter { height: 4px; border-radius: 2px; background: var(--line); margin-top: 6px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); }
+
+/* rumour receipts, jobs, security */
+.hot { margin: 14px 16px 0; padding: 12px 14px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-size: 14px; font-weight: 500; }
+.hot .cap { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; opacity: .8; }
+.radios.tight { margin: 0; gap: 6px; }
+.radios.tight .radio { padding: 5px 11px; font-size: 13px; }
+.tagrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tagp { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; background: var(--surface-2); color: var(--fg); padding: 2px 8px; border-radius: 999px; }
+.stamp { display: inline-block; border: 2px solid currentColor; border-radius: 6px; padding: 1px 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; transform: rotate(-3deg); }
+.stamp.true { color: var(--ok); }
+.stamp.busted { color: var(--danger); }
+.belief { display: flex; gap: 8px; flex-wrap: wrap; }
+.vote { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+.vote b { font-family: var(--font-mono); font-weight: 500; font-size: 12px; }
+.vote[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.vote:disabled { opacity: .6; cursor: default; }
+.bbar { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bbar i { display: block; height: 100%; background: var(--ok); }
+.settle { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.infocard { margin: 14px 16px 0; padding: 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; display: grid; gap: 10px; }
+.infocard p { margin: 0; }
+.flow { display: flex; gap: 6px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 12px; }
+.flow span { background: var(--surface-2); padding: 4px 10px; border-radius: 999px; }
+.flow span + span::before { content: "\2192"; margin-right: 8px; color: var(--muted); }
+.wx { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.wx i { width: 9px; height: 9px; border-radius: 50%; background: var(--wxc); display: inline-block; }
+.wx.sunny { --wxc: var(--ok); }
+.wx.cloudy { --wxc: var(--flame); }
+.wx.stormy { --wxc: var(--danger); }
+.wx.freeze { --wxc: var(--av4); }
+.dots { display: inline-flex; gap: 3px; vertical-align: middle; margin-left: 6px; }
+.dot { width: 9px; height: 9px; border-radius: 2px; background: var(--line); }
+.dot.on { background: var(--fg); }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.steps li { display: flex; gap: 12px; align-items: flex-start; }
+.sn { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--fg); color: var(--bg); display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; }
+.whisper { margin: 0 0 8px; font-size: 14px; }
+.secrow { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.secrow > div { min-width: 0; }
+.st { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; flex: none; }
+.st.on { color: var(--ok); }
+.st.part { color: var(--fg); border-style: dashed; }
+.st.plan { color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="app" id="app">
+  <div id="root"></div>
+  <div id="layer"></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var root = document.getElementById('root');
+  var layer = document.getElementById('layer');
+  var toastEl = document.getElementById('toast');
+  var REDUCE = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  /* ---------- helpers ---------- */
+  var rnd = function (n) { return Math.floor(Math.random() * n); };
+  var pick = function (a) { return a[rnd(a.length)]; };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+  var $ = function (s) { return document.querySelector(s); };
+
+  var ADJ = ['Sleepy', 'Soggy', 'Chatty', 'Wobbly', 'Spicy', 'Dizzy', 'Grumpy', 'Sneaky', 'Giggly', 'Moody', 'Sparkly', 'Crispy'];
+  var NOUN = ['Samosa', 'Rasgulla', 'Hilsa', 'Tram', 'Jhalmuri', 'Mishti', 'Cha', 'Puchka', 'Rickshaw', 'Luchi', 'Sandesh', 'Kachori'];
+  var makeAlias = function () { return pick(ADJ) + ' ' + pick(NOUN) + ' #' + (100 + rnd(9900)); };
+  var AVC = ['var(--av1)', 'var(--av2)', 'var(--av3)', 'var(--av4)'];
+
+  function initial(alias) { var w = alias.split(' '); return (w[1] || w[0]).charAt(0); }
+  function avatar(alias, sm) {
+    var h = 0; for (var i = 0; i < alias.length; i++) h += alias.charCodeAt(i);
+    return '<div class="avatar' + (sm ? ' sm' : '') + '" style="background:' + AVC[h % 4] + '" aria-hidden="true">' + esc(initial(alias)) + '</div>';
+  }
+
+  var svg = function (p, size, fill) {
+    size = size || 22;
+    return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + (fill || 'none') + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+  };
+  var I = {
+    back: svg('<path d="M15 5l-7 7 7 7"/>'),
+    shield: svg('<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/>'),
+    send: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+    link: svg('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+    plus: svg('<path d="M12 5v14M5 12h14"/>'),
+    copy: svg('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>'),
+    flame: '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="var(--flame)" d="M12 2c.5 3 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.2 2-4.2.2 1.8 1.1 2.7 2 2.7.8-2.2.9-5.3 1-8.5z"/></svg>',
+    star: function (on) { return svg('<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.2 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>', 18, on ? 'currentColor' : 'none'); },
+    heart: function (on) { return svg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>', 18, on ? 'currentColor' : 'none'); },
+    eye: svg('<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', 18),
+    lock: svg('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', 14)
+  };
+
+  /* ---------- state ---------- */
+  var mid = 100;
+  var dur = function (t) { return Math.min(14000, 5000 + t.length * 90); };
+  var mk = function (from, text, state) {
+    return { id: ++mid, from: from, text: text, state: state, dur: dur(text), expiresAt: 0, paused: false, remaining: 0, keepState: '', theirAsk: false };
+  };
+
+  function seedContacts() {
+    return [
+      { id: 'c1', alias: 'Grumpy Hilsa #1138', days: 112, allowShot: false, iAllow: false, shotAsk: 'idle', msgs: [
+        mk('them', 'Psst. Did you hear who finally got the corner cabin?', 'sealed'),
+        mk('them', 'Not telling anyone else, but the AC repair got approved today.', 'sealed')] },
+      { id: 'c2', alias: 'Dizzy Rasgulla #764', days: 87, allowShot: false, iAllow: false, shotAsk: 'idle', msgs: [
+        mk('them', 'Lunch at 1? I have a theory about the new canteen menu.', 'sealed')] },
+      { id: 'c3', alias: 'Sneaky Jhalmuri #2290', days: 41, allowShot: false, iAllow: false, shotAsk: 'idle', msgs: [] },
+      { id: 'c4', alias: 'Wobbly Tram #305', days: 9, allowShot: false, iAllow: false, shotAsk: 'idle', msgs: [
+        mk('them', 'Welcome to the secret side of the office.', 'sealed')] }
+    ];
+  }
+
+  /* Example community used to fill the feed and rankings. */
+  var USERS = [
+    { alias: 'Grumpy Hilsa #1138', gender: 'Man', days: 112, posts: 38, likesGiven: 420, msgs: 610, settled: 14, hits: 11 },
+    { alias: 'Dizzy Rasgulla #764', gender: 'Woman', days: 87, posts: 44, likesGiven: 365, msgs: 480, settled: 20, hits: 18 },
+    { alias: 'Chatty Cha #512', gender: 'Woman', days: 64, posts: 21, likesGiven: 290, msgs: 530, settled: 9, hits: 4 },
+    { alias: 'Sneaky Jhalmuri #2290', gender: 'Man', days: 41, posts: 17, likesGiven: 150, msgs: 210, settled: 12, hits: 9 },
+    { alias: 'Sparkly Luchi #88', gender: 'Non-binary', days: 23, posts: 12, likesGiven: 98, msgs: 140, settled: 5, hits: 4 },
+    { alias: 'Wobbly Tram #305', gender: 'Woman', days: 9, posts: 3, likesGiven: 25, msgs: 40, settled: 1, hits: 1 },
+    { alias: 'Giggly Sandesh #917', gender: 'Woman', days: 73, posts: 29, likesGiven: 240, msgs: 300, settled: 16, hits: 12 },
+    { alias: 'Moody Kachori #4410', gender: 'Man', days: 55, posts: 9, likesGiven: 60, msgs: 95, settled: 6, hits: 2 },
+    { alias: 'Crispy Mishti #63', gender: 'Prefer not to say', days: 31, posts: 14, likesGiven: 130, msgs: 180, settled: 8, hits: 7 },
+    { alias: 'Spicy Rickshaw #2705', gender: 'Man', days: 96, posts: 26, likesGiven: 210, msgs: 400, settled: 11, hits: 10 }
+  ];
+  var POOL = USERS.slice(0, 6).map(function (u) { return { alias: u.alias, days: u.days, gender: u.gender }; });
+
+  function roomMsg(alias, days, text, star) {
+    return { id: ++mid, alias: alias, days: days, text: text, mine: false, state: 'live', star: !!star, dur: 15000, expiresAt: 0 };
+  }
+  function seedRooms() {
+    return [{
+      id: 'r1', name: 'Floor 3 Tea Table', save: true, link: 'kanakani.app/r/tea3-9k2m', tab: 'chat',
+      members: [POOL[0], POOL[1], POOL[2], POOL[4]],
+      msgs: [
+        roomMsg('Dizzy Rasgulla #764', 87, 'Who ordered the 4pm samosas again? The whole floor smells like victory.'),
+        roomMsg('Chatty Cha #512', 64, 'Not me. Ask the person who keeps borrowing my stapler.'),
+        roomMsg('Grumpy Hilsa #1138', 112, 'Photo from last Friday’s farewell goes in memories. Star it.', true)
+      ]
+    }];
+  }
+
+  var REPLIES = [
+    'Stop it, I am laughing at my desk.',
+    'You did not hear this from me.',
+    'Wait, tell me everything. Slowly.',
+    'That explains the closed-door meeting.',
+    'I will keep this one. Do you want to keep it too?',
+    'Same, honestly.'
+  ];
+  var ROOM_REPLIES = [
+    'Adding this to the legend of Floor 3.',
+    'Say less. Bringing biscuits tomorrow.',
+    'This room remembers everything.',
+    'Okay but who started this?'
+  ];
+
+  var S = { me: null, contacts: [], rooms: [], posts: [], rank: 'liked', rankSig: '', tag: 'all', ptag: 'Office life', prefill: '', slipAck: false, jf: 'all', wipeArm: 0, view: { name: 'feed' }, sheet: null, ob: { step: 'form', num: '98300 12345', alias: '', seal: '', gender: 'Prefer not to say' } };
+
+  function persist() {
+    try { localStorage.setItem('kanakani.me', JSON.stringify(S.me)); } catch (e) { /* storage unavailable */ }
+  }
+  function loadMe() {
+    try { var v = localStorage.getItem('kanakani.me'); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+  }
+
+  /* ---------- identity seal ---------- */
+  function hex(bytes) { var s = ''; for (var i = 0; i < bytes.length; i++) s += ('0' + bytes[i].toString(16)).slice(-2); return s; }
+  function fallbackHex() { var s = ''; for (var i = 0; i < 12; i++) s += rnd(16).toString(16); return s; }
+  function makeSeal(num) {
+    try {
+      var salt = new Uint8Array(16);
+      crypto.getRandomValues(salt);
+      var data = new TextEncoder().encode(hex(salt) + ':' + num);
+      return crypto.subtle.digest('SHA-256', data).then(function (d) { return hex(new Uint8Array(d)).slice(0, 12); }, function () { return fallbackHex(); });
+    } catch (e) {
+      return Promise.resolve(fallbackHex());
+    }
+  }
+  function fmtSeal(h) { return h.replace(/(.{4})(?=.)/g, '$1 · '); }
+
+  /* ---------- toast ---------- */
+  var toastTimer = 0;
+  function toast(text) {
+    toastEl.textContent = text; toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 3200);
+  }
+
+  /* ---------- lookups ---------- */
+  function getContact(id) { return S.contacts.filter(function (c) { return c.id === id; })[0]; }
+  function getRoom(id) { return S.rooms.filter(function (r) { return r.id === id; })[0]; }
+  function findMsg(id) {
+    var i, j;
+    for (i = 0; i < S.contacts.length; i++) for (j = 0; j < S.contacts[i].msgs.length; j++) if (S.contacts[i].msgs[j].id === id) return S.contacts[i].msgs[j];
+    for (i = 0; i < S.rooms.length; i++) for (j = 0; j < S.rooms[i].msgs.length; j++) if (S.rooms[i].msgs[j].id === id) return S.rooms[i].msgs[j];
+    return null;
+  }
+  function curChat() { return S.view.name === 'chat' ? getContact(S.view.id) : null; }
+  function curRoom() { return S.view.name === 'room' ? getRoom(S.view.id) : null; }
+  function sortedContacts() { return S.contacts.slice().sort(function (a, b) { return b.days - a.days; }); }
+
+  /* ---------- onboarding ---------- */
+  function logoHTML() { return '<div class="logo">Kanakani</div>'; }
+
+  function renderOnboard() {
+    var o = S.ob, body = '';
+    if (o.step === 'form') {
+      body =
+        '<form id="obform" class="onboard-form" novalidate>' +
+        '<label class="fieldlabel" for="num">Mobile number</label>' +
+        '<div class="numrow"><div class="prefix">+91</div>' +
+        '<input class="field" id="num" type="tel" inputmode="numeric" autocomplete="off" value="' + esc(o.num) + '"></div>' +
+        '<p class="err" id="numerr" role="alert"></p>' +
+        genderPicker(o) +
+        '<button class="btn block" type="submit">Make my secret name</button>' +
+        '<p class="small" style="margin-top:10px">A sample number is filled in for this demo. Nothing leaves this page.</p>' +
+        '</form>';
+    } else if (o.step === 'shuffle') {
+      body = '<div class="aliascard" aria-live="polite"><div class="cap">Picking your name</div><div class="big" id="ac">' + esc(o.alias) + '</div></div>';
+    } else {
+      body =
+        '<div class="aliascard"><div class="cap">Your secret name</div><div class="big">' + esc(o.alias) + '</div></div>' +
+        '<div class="seal"><span class="small">Vault seal for your number</span><b>' + esc(fmtSeal(o.seal)) + '</b></div>' +
+        '<ul class="facts">' +
+        '<li>Your number is mixed with a random salt on this device. Only the seal above is kept.</li>' +
+        '<li>Everyone else sees your secret name, your gender (' + esc(gtext(o.gender)) + ') and how many days you have been here. Nothing else.</li>' +
+        '<li>Messages vanish after they are read, unless both of you choose to keep them.</li>' +
+        '</ul>' +
+        '<button class="btn block" data-act="enter">Enter Kanakani</button>';
+    }
+    root.innerHTML =
+      '<div class="screen onboard"><div class="obtop">' + logoHTML() + langSelect() + '</div>' +
+      '<h1>Say it quietly.</h1>' +
+      '<p class="lead">Sign up with your number. Kanakani turns it into a silly secret name and locks the number away, so no message can be traced back to you.</p>' +
+      body + '</div>';
+  }
+
+  function makeName() {
+    var inp = $('#num'); var digits = inp.value.replace(/\D/g, '');
+    if (digits.length < 10) { $('#numerr').textContent = 'Enter a 10-digit mobile number.'; return; }
+    S.ob.num = inp.value;
+    S.ob.step = 'shuffle'; S.ob.alias = makeAlias();
+    renderOnboard();
+    var sealP = makeSeal(digits);
+    var finalAlias = makeAlias();
+    var finish = function () {
+      sealP.then(function (h) { S.ob.alias = finalAlias; S.ob.seal = h; S.ob.step = 'done'; renderOnboard(); });
+    };
+    if (REDUCE) { finish(); return; }
+    var n = 0;
+    var t = setInterval(function () {
+      n++;
+      var el = $('#ac');
+      if (el) el.textContent = makeAlias();
+      if (n >= 14) { clearInterval(t); finish(); }
+    }, 90);
+  }
+
+  function enter() {
+    S.me = { alias: S.ob.alias, days: 1, seal: S.ob.seal, gender: S.ob.gender, msgs: 0, likesGiven: 0, postCount: 0, settled: 0, hits: 0 };
+    persist(); S.view = { name: 'feed' }; render();
+  }
+
+  /* ---------- main views ---------- */
+  function topbar() {
+    return '<header class="top">' + logoHTML() + '<div class="grow"></div>' + langSelect() + '<div class="chip" title="Days you have been on Kanakani">' + I.flame + ' ' + S.me.days + ' d</div></header>';
+  }
+  function tabs(active) {
+    var t = [['feed', 'Feed'], ['chats', 'Chats'], ['rooms', 'Rooms'], ['jobs', 'Jobs'], ['ranks', 'Ranks'], ['me', 'Me']];
+    return '<nav class="tabs" aria-label="Sections">' + t.map(function (x) {
+      return '<button class="tab" data-act="tab" data-tab="' + x[0] + '"' + (active === x[0] ? ' aria-current="page"' : '') + '>' + x[1] + '</button>';
+    }).join('') + '</nav>';
+  }
+
+  function chatsView() {
+    var list = sortedContacts();
+    return '<div class="label">Oldest gossipers first</div>' + list.map(function (c, i) {
+      var sealed = c.msgs.filter(function (m) { return m.state === 'sealed'; }).length;
+      var prev = sealed ? sealed + ' sealed snap' + (sealed > 1 ? 's' : '') + ' waiting' : 'Nothing waiting';
+      return '<button class="row" data-act="openchat" data-id="' + c.id + '">' + avatar(c.alias) +
+        '<div class="grow"><div class="name">' + esc(c.alias) + '</div><div class="sub">' + prev + '</div></div>' +
+        '<div class="end"><span class="days">' + I.flame + ' ' + c.days + 'd</span>' + (i === 0 ? '<span class="pill">Longest streak</span>' : '') + '</div></button>';
+    }).join('');
+  }
+
+  function roomsView() {
+    return '<div class="btnrow"><button class="btn" data-act="newroom">' + I.plus + ' New room</button><button class="btn ghost" data-act="joinroom">' + I.link + ' Join with link</button></div>' +
+      '<div class="label">Your rooms</div>' +
+      (S.rooms.length ? S.rooms.map(function (r) {
+        return '<button class="row" data-act="openroom" data-id="' + r.id + '"><div class="avatar" style="background:var(--av1)" aria-hidden="true">' + esc(r.name.charAt(0)) + '</div>' +
+          '<div class="grow"><div class="name">' + esc(r.name) + '</div><div class="sub">' + (r.members.length + 1) + ' members · ' + (r.save ? 'Saves chat and memories' : 'Messages fade after 15s') + '</div></div></button>';
+      }).join('') : '<div class="empty">No rooms yet. Create one for people you trust, or paste an invite link.</div>');
+  }
+
+  function meView() {
+    var m = S.me;
+    return '<div class="mepad">' +
+      '<div class="aliascard"><div class="cap">You are</div><div class="big">' + esc(m.alias) + '</div></div>' +
+      '<p class="small" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">Shown beside your name: <span class="gpill">' + esc(gtext(m.gender)) + '</span></p>' +
+      '<div class="stats"><div class="stat"><div class="n">' + m.days + '</div><div class="t">Days here</div></div>' +
+      '<div class="stat"><div class="n">' + fmt(rankUsers().filter(function (u) { return u.you; })[0].pts) + '</div><div class="t">Activity points</div></div>' +
+      '<div class="stat"><div class="n">' + (m.postCount || 0) + '</div><div class="t">Posts</div></div>' +
+      '<div class="stat"><div class="n">' + fmt(S.posts.filter(function (p) { return p.mine; }).reduce(function (a, p) { return a + p.likes; }, 0)) + '</div><div class="t">Likes received</div></div>' +
+      '<div class="stat"><div class="n">' + ((m.settled || 0) >= 3 ? truthRate({ settled: m.settled, hits: m.hits || 0 }) + '%' : '\u2014') + '</div><div class="t">Truth score</div></div>' +
+      '<div class="stat"><div class="n">' + (m.settled || 0) + '</div><div class="t">Rumours settled</div></div></div>' +
+      '<div class="seal"><span class="small">Vault seal</span><b>' + esc(fmtSeal(m.seal || '000000000000')) + '</b></div>' +
+      '<button class="btn block" data-act="security">Security Center</button>' +
+      '<p class="small">Your number never appears anywhere in the app. Open Kanakani every day to climb the streak list. The more days you have, the higher your name sits in chats and rooms.</p>' +
+      '<div class="label" style="padding:4px 0 0">Demo controls</div>' +
+      '<div class="btnrow" style="padding:0"><button class="btn ghost" data-act="ffwd">Fast-forward one day</button><button class="btn ghost" data-act="reset">Start over</button></div>' +
+      '</div>';
+  }
+
+  /* ---------- shared helpers ---------- */
+  var fmt = function (n) { try { return Number(n).toLocaleString('en-IN'); } catch (e) { return String(n); } };
+  function gtext(g) { return !g || g === 'Prefer not to say' ? 'Not shared' : g; }
+  function bump(k) { if (!S.me) return; S.me[k] = (S.me[k] || 0) + 1; persist(); }
+  function ago(ts) {
+    var s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'now';
+    var m = Math.floor(s / 60); if (m < 60) return m + 'm';
+    var h = Math.floor(m / 60); if (h < 24) return h + 'h';
+    return Math.floor(h / 24) + 'd';
+  }
+  function userOf(alias) { for (var i = 0; i < USERS.length; i++) if (USERS[i].alias === alias) return USERS[i]; return null; }
+  function genderPicker(o) {
+    var G = ['Woman', 'Man', 'Non-binary', 'Prefer not to say'];
+    return '<div class="fieldlabel" id="glabel">Gender shown next to your name</div><div class="radios" role="radiogroup" aria-labelledby="glabel">' +
+      G.map(function (g) {
+        return '<button type="button" class="radio" role="radio" aria-checked="' + (o.gender === g ? 'true' : 'false') + '" data-act="gender" data-g="' + g + '">' + g + '</button>';
+      }).join('') + '</div>';
+  }
+  function encryptText(t) {
+    try {
+      return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt']).then(function (k) {
+        var iv = crypto.getRandomValues(new Uint8Array(12));
+        return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(t)).then(function (buf) { return hex(new Uint8Array(buf)).slice(0, 20); });
+      }).catch(function () { return ''; });
+    } catch (e) { return Promise.resolve(''); }
+  }
+
+  /* ---------- feed ---------- */
+  var TAGS = ['Office life', 'Boss radar', 'Canteen', 'Cake alert', 'Hiring buzz'];
+
+  function seedPosts() {
+    var now = Date.now();
+    /* alias, text, likes, views, minutes ago, topic, pakki, gappa, outcome */
+    var raw = [
+      ['Crispy Mishti #63', 'Hearing Howrah Bridge Systems opens 40 fresher seats after Diwali. Anyone able to confirm?', 64, 700, 12, 'Hiring buzz', 52, 18, ''],
+      ['Grumpy Hilsa #1138', 'The lift on Floor 3 has been out of order for 11 days. At this point it is a meeting room.', 214, 1840, 25, 'Office life', 190, 12, ''],
+      ['Dizzy Rasgulla #764', 'Whoever keeps microwaving fish at 1pm, we know you are reading this.', 187, 2210, 70, 'Canteen', 140, 9, ''],
+      ['Chatty Cha #512', 'Rumour update: the Friday cake is no longer a rumour. Bring your own fork.', 96, 940, 140, 'Cake alert', 88, 6, 'true'],
+      ['Sneaky Jhalmuri #2290', 'Spotted: a senior manager rehearsing a presentation in the stairwell. We all clapped quietly.', 143, 1320, 200, 'Boss radar', 70, 30, ''],
+      ['Sparkly Luchi #88', 'Hot take: the 4pm chai break is the real standup.', 76, 610, 320, 'Office life', 40, 33, ''],
+      ['Wobbly Tram #305', 'New here. Who do I ask about the corner cabin everyone whispers about?', 31, 400, 480, 'Boss radar', 10, 4, ''],
+      ['Moody Kachori #4410', 'Someone left a sticky note on the printer that just says sorry. We do not know why. We forgive you anyway.', 58, 780, 600, 'Office life', 30, 25, ''],
+      ['Giggly Sandesh #917', 'The AC is finally set to 24. Whoever fixed it, you are a legend.', 121, 1105, 900, 'Office life', 95, 4, 'true'],
+      ['Spicy Rickshaw #2705', 'Unpopular opinion: Monday standups should happen sitting down, with biscuits.', 89, 1490, 1300, 'Office life', 25, 60, ''],
+      ['Grumpy Hilsa #1138', 'Rumour: Friday is now work from home for everyone. (It is not.)', 54, 620, 1800, 'Boss radar', 12, 150, 'busted']
+    ];
+    return raw.map(function (r) {
+      var u = userOf(r[0]);
+      return { id: ++mid, alias: r[0], gender: u.gender, days: u.days, text: r[1], likes: r[2], views: r[3], ts: now - r[4] * 60000,
+        tag: r[5], pakki: r[6], gappa: r[7], outcome: r[8], vote: '', mine: false, liked: false, viewed: false, cipher: '' };
+    });
+  }
+  function findPost(id) { for (var i = 0; i < S.posts.length; i++) if (S.posts[i].id === id) return S.posts[i]; return null; }
+
+  /* Truth score: the share of a person's settled rumours that came true. */
+  function truthStats(alias) {
+    if (S.me && alias === S.me.alias) return { settled: S.me.settled || 0, hits: S.me.hits || 0 };
+    var u = userOf(alias); return u ? { settled: u.settled, hits: u.hits } : { settled: 0, hits: 0 };
+  }
+  function truthRate(t) { return t.settled ? Math.round(t.hits / t.settled * 100) : 0; }
+  function isOracle(alias) { var t = truthStats(alias); return t.settled >= 5 && truthRate(t) >= 85; }
+
+  function likeBtn(p) {
+    return '<button class="act" data-act="like" data-m="' + p.id + '" aria-pressed="' + (p.liked ? 'true' : 'false') + '"' + (p.mine ? ' disabled title="You cannot like your own post"' : '') + ' aria-label="Like">' +
+      I.heart(p.liked) + ' <span data-likes="' + p.id + '">' + fmt(p.likes) + '</span></button>';
+  }
+  function beliefHTML(p) {
+    var t = p.pakki + p.gappa, pc = t ? Math.round(p.pakki / t * 100) : 50, dis = p.mine ? ' disabled' : '';
+    return '<div class="belief"><button class="vote" data-act="vote" data-v="pakki" data-m="' + p.id + '" aria-pressed="' + (p.vote === 'pakki' ? 'true' : 'false') + '"' + dis + '>Pakki khabar <b>' + fmt(p.pakki) + '</b></button>' +
+      '<button class="vote" data-act="vote" data-v="gappa" data-m="' + p.id + '" aria-pressed="' + (p.vote === 'gappa' ? 'true' : 'false') + '"' + dis + '>Gappa <b>' + fmt(p.gappa) + '</b></button></div>' +
+      '<div class="bbar" role="img" aria-label="' + pc + ' percent say pakki khabar"><i style="width:' + pc + '%"></i></div>';
+  }
+  function postHTML(p) {
+    var alias = p.mine ? S.me.alias : p.alias, g = p.mine ? S.me.gender : p.gender, days = p.mine ? S.me.days : p.days;
+    var ts = truthStats(alias), tr = ts.settled >= 3 ? '<span class="days" title="Share of settled rumours that came true">truth ' + truthRate(ts) + '%</span>' : '';
+    var stamp = p.outcome ? '<span class="stamp ' + p.outcome + '">' + (p.outcome === 'true' ? 'Came true' : 'Busted') + '</span>' : '';
+    var settle = p.mine && !p.outcome ? '<div class="settle">Did it play out? <button class="mini" data-act="settle" data-o="true" data-m="' + p.id + '">Came true</button><button class="mini" data-act="settle" data-o="busted" data-m="' + p.id + '">Busted</button></div>' : '';
+    return '<article class="post" id="post-' + p.id + '">' +
+      '<div class="phead">' + avatar(alias, true) +
+      '<div class="grow"><div class="pname"><span class="name">' + esc(alias) + '</span>' + (p.mine ? '<span class="pill">You</span>' : '') + (isOracle(alias) ? '<span class="pill">Oracle</span>' : '') + '</div>' +
+      '<div class="sub"><span class="gpill">' + esc(gtext(g)) + '</span><span class="days">' + I.flame + ' ' + days + 'd</span>' + tr + '<span>· ' + ago(p.ts) + '</span></div></div>' +
+      (p.mine ? '<button class="mini" data-act="delpost" data-m="' + p.id + '">Delete</button>' : '') + '</div>' +
+      '<div class="tagrow"><span class="tagp">' + esc(p.tag) + '</span>' + stamp + '</div>' +
+      '<p class="ptext">' + esc(p.text) + '</p>' + beliefHTML(p) + settle +
+      '<div class="pfoot">' + likeBtn(p) + '<span class="act static" title="Views">' + I.eye + ' <span data-views="' + p.id + '">' + fmt(p.views) + '</span></span>' +
+      (p.mine && p.cipher ? '<span class="lock" id="cipher-' + p.id + '">' + I.lock + ' stored as ' + esc(p.cipher.slice(0, 10)) + '…</span>' : '') + '</div></article>';
+  }
+  function replacePost(p) { var el = document.getElementById('post-' + p.id); if (el) el.outerHTML = postHTML(p); }
+
+  function slipCheck(t) {
+    var f = [];
+    if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(t)) f.push('an email address');
+    if (/(?:\+?\d[\s-]?){10,}/.test(t)) f.push('a phone number');
+    if (/https?:\/\/|www\./i.test(t)) f.push('a link');
+    if (/\b[A-Za-z]{2,4}-?\d{4,}\b/.test(t)) f.push('what looks like an employee ID');
+    return f;
+  }
+
+  function feedView() {
+    S.posts.forEach(function (p) { if (!p.mine && !p.viewed) { p.viewed = true; p.views++; } });
+    var hot = S.posts.slice().sort(function (a, b) { return b.views - a.views; })[0];
+    var prefill = S.prefill || ''; S.prefill = '';
+    var picker = '<div class="radios tight" role="radiogroup" aria-label="Topic">' + TAGS.map(function (t) {
+      return '<button type="button" class="radio" role="radio" aria-checked="' + (S.ptag === t ? 'true' : 'false') + '" data-act="ptag" data-t="' + t + '">' + t + '</button>';
+    }).join('') + '</div>';
+    var filters = '<div class="chips" role="group" aria-label="Filter by topic">' + [['all', 'Everything']].concat(TAGS.map(function (t) { return [t, t]; })).map(function (c) {
+      return '<button class="chipbtn" data-act="ftag" data-t="' + c[0] + '" aria-pressed="' + (S.tag === c[0] ? 'true' : 'false') + '">' + c[1] + '</button>';
+    }).join('') + '</div>';
+    var list = S.posts.filter(function (p) { return S.tag === 'all' || p.tag === S.tag; });
+    return '<div class="hot"><div class="cap">Hot on the tapri</div><div>' + esc(hot.text) + '</div></div>' +
+      '<form class="pcompose" id="postform" novalidate>' +
+      '<label class="fieldlabel" for="postdraft" style="margin:0">Spill the chai</label>' +
+      '<textarea class="field" id="postdraft" rows="3" maxlength="280" placeholder="Whisper it here. Your name stays in the matka.">' + esc(prefill) + '</textarea>' +
+      picker +
+      '<p class="err" id="slip" role="alert"></p>' +
+      '<div class="line"><span class="small">As ' + esc(S.me.alias) + ' · ' + esc(gtext(S.me.gender)) + '</span><button class="btn" id="postbtn" type="submit">Post</button></div>' +
+      '<p class="small lockline">' + I.lock + ' Stored encrypted. Others see only your secret name and gender.</p></form>' +
+      filters + '<div class="label">Fresh off the tapri</div>' +
+      (list.length ? list.map(postHTML).join('') : '<div class="empty">Nobody has gossiped about this yet. Be the first.</div>');
+  }
+  function addPost() {
+    var ta = $('#postdraft'); var text = ta ? ta.value.trim() : ''; if (!text) { toast('A blank whisper is just silence. Write something.'); return; }
+    var flags = slipCheck(text);
+    if (flags.length && !S.slipAck) {
+      S.slipAck = true;
+      $('#slip').textContent = 'Careful: this has ' + flags.join(' and ') + '. Anyone who knows you could trace it. Edit it, or tap Post anyway.';
+      $('#postbtn').textContent = 'Post anyway';
+      return;
+    }
+    S.slipAck = false;
+    var p = { id: ++mid, alias: S.me.alias, gender: S.me.gender, days: S.me.days, text: text, likes: 0, views: 0, ts: Date.now(), tag: S.ptag,
+      pakki: 0, gappa: 0, outcome: '', vote: '', mine: true, liked: false, viewed: true, cipher: '' };
+    S.posts.unshift(p); bump('postCount'); S.tag = 'all'; render();
+    toast('Spilled. Others see ' + gtext(S.me.gender).toLowerCase() + ' and your secret name only.');
+    encryptText(text).then(function (h) {
+      p.cipher = h; if (!h) return;
+      var foot = document.querySelector('#post-' + p.id + ' .pfoot');
+      if (foot && !document.getElementById('cipher-' + p.id)) foot.insertAdjacentHTML('beforeend', '<span class="lock" id="cipher-' + p.id + '">' + I.lock + ' stored as ' + esc(h.slice(0, 10)) + '…</span>');
+    });
+  }
+  function toggleLike(id) {
+    var p = findPost(id); if (!p || p.mine) return;
+    p.liked = !p.liked; p.likes += p.liked ? 1 : -1;
+    S.me.likesGiven = Math.max(0, (S.me.likesGiven || 0) + (p.liked ? 1 : -1)); persist();
+    var b = document.querySelector('[data-act="like"][data-m="' + id + '"]');
+    if (b) { b.setAttribute('aria-pressed', p.liked ? 'true' : 'false'); b.innerHTML = I.heart(p.liked) + ' <span data-likes="' + id + '">' + fmt(p.likes) + '</span>'; }
+  }
+  function castVote(id, v) {
+    var p = findPost(id); if (!p || p.mine) return;
+    if (p.vote === v) { p[v]--; p.vote = ''; } else { if (p.vote) p[p.vote]--; p[v]++; p.vote = v; }
+    replacePost(p);
+  }
+  function settle(id, o) {
+    var p = findPost(id); if (!p || !p.mine || p.outcome) return;
+    p.outcome = o; bump('settled'); if (o === 'true') bump('hits');
+    replacePost(p);
+    toast(o === 'true' ? 'Receipt stamped: came true. Your truth score goes up.' : 'Busted. Your truth score takes a small bruise.');
+  }
+  function delPost(id) {
+    S.posts = S.posts.filter(function (p) { return p.id !== id; });
+    var el = document.getElementById('post-' + id); if (el) el.remove();
+    toast('Post deleted. It also leaves the rankings.');
+  }
+
+  /* ---------- ranks ---------- */
+  var CRIT = [['liked', 'Most liked'], ['viewed', 'Most viewed'], ['truth', 'Most accurate'], ['heavy', 'Heavy users'], ['streak', 'Longest streak']];
+  var UNIT = { liked: 'likes', viewed: 'views', truth: '% true', heavy: 'points', streak: 'days' };
+  var NOTE = {
+    liked: 'Single posts ranked by likes. One post, one place.',
+    viewed: 'Single posts ranked by how many people opened them.',
+    truth: 'Who is right most often. When a rumour plays out, its author marks it Came true or Busted. You need 3 settled rumours to enter.',
+    heavy: 'Who uses Kanakani the most. 5 points per post, 2 per chat message, 1 per like given and 1 per day here.',
+    streak: 'Who has been on Kanakani the most days.'
+  };
+  function rankUsers() {
+    var arr = USERS.map(function (u) { return { alias: u.alias, gender: u.gender, days: u.days, posts: u.posts, likesGiven: u.likesGiven, msgs: u.msgs, settled: u.settled, hits: u.hits, you: false }; });
+    arr.push({ alias: S.me.alias, gender: S.me.gender, days: S.me.days, posts: S.me.postCount || 0, likesGiven: S.me.likesGiven || 0, msgs: S.me.msgs || 0, settled: S.me.settled || 0, hits: S.me.hits || 0, you: true });
+    arr.forEach(function (u) { u.pts = u.posts * 5 + u.msgs * 2 + u.likesGiven + u.days; });
+    return arr;
+  }
+  function rankItems() {
+    var k = S.rank, items;
+    if (k === 'liked' || k === 'viewed') {
+      items = S.posts.map(function (p) {
+        return { key: 'p' + p.id, alias: p.mine ? S.me.alias : p.alias, gender: p.mine ? S.me.gender : p.gender, detail: p.text, snippet: true, value: k === 'liked' ? p.likes : p.views, tie: 0, you: p.mine };
+      });
+    } else if (k === 'truth') {
+      items = rankUsers().filter(function (u) { return u.settled >= 3; }).map(function (u) {
+        return { key: u.alias, alias: u.alias, gender: u.gender, snippet: false, detail: u.hits + ' of ' + u.settled + ' rumours came true', value: Math.round(u.hits / u.settled * 100), tie: u.settled, you: u.you };
+      });
+    } else {
+      items = rankUsers().map(function (u) {
+        return { key: u.alias, alias: u.alias, gender: u.gender, snippet: false,
+          detail: k === 'heavy' ? u.posts + ' posts · ' + u.msgs + ' messages · ' + u.likesGiven + ' likes given' : u.posts + ' posts so far',
+          value: k === 'heavy' ? u.pts : u.days, tie: 0, you: u.you };
+      });
+    }
+    items.sort(function (a, b) { return (b.value - a.value) || (b.tie - a.tie); });
+    if (k === 'liked' || k === 'viewed') items = items.slice(0, 10);
+    return items;
+  }
+  function standingText(items) {
+    var k = S.rank, unit = UNIT[k], i = -1, n;
+    for (n = 0; n < items.length; n++) if (items[n].you) { i = n; break; }
+    if (k === 'liked' || k === 'viewed') {
+      if (i < 0) return 'None of your posts is in the top 10 yet. Spill something in Feed to get on this list.';
+      return 'Your best post is #' + (i + 1) + ' with ' + fmt(items[i].value) + ' ' + unit + '.';
+    }
+    if (k === 'truth') {
+      if (i < 0) return 'You have ' + ((S.me.settled || 0)) + ' settled rumours. Settle ' + Math.max(0, 3 - (S.me.settled || 0)) + ' more in Feed to enter this list.';
+      return i === 0 ? 'You are #1. Oracle energy.' : 'You are #' + (i + 1) + ' with ' + items[i].value + '% of rumours true. #1 has ' + items[0].value + '%.';
+    }
+    if (i === 0) return 'You are #1 with ' + fmt(items[0].value) + ' ' + unit + '. Keep it going.';
+    return 'You are #' + (i + 1) + ' with ' + fmt(items[i].value) + ' ' + unit + '. #1 has ' + fmt(items[0].value) + '.';
+  }
+  function ranksInner() {
+    var items = rankItems(), k = S.rank, unit = UNIT[k];
+    var max = items.length ? Math.max(items[0].value, 1) : 1;
+    S.rankSig = items.map(function (x) { return x.key; }).join('|');
+    var chips = '<div class="chips" role="group" aria-label="Ranking criteria">' + CRIT.map(function (c) {
+      return '<button class="chipbtn" data-act="crit" data-k="' + c[0] + '" aria-pressed="' + (S.rank === c[0] ? 'true' : 'false') + '">' + c[1] + '</button>';
+    }).join('') + '</div>';
+    var top = items.slice(0, 3), rest = items.slice(3);
+    var podium = top.length ? '<div class="podium">' + [1, 0, 2].map(function (i) {
+      var x = top[i]; if (!x) return '<div></div>';
+      return '<div class="pod p' + (i + 1) + '"><div class="pn">' + esc(x.alias) + '</div>' +
+        '<span class="gpill">' + esc(gtext(x.gender)) + '</span>' + (x.you ? '<span class="pill">You</span>' : '') +
+        (x.snippet ? '<div class="psnip">' + esc(x.detail) + '</div>' : '') +
+        '<div class="pv"><span data-rv="' + esc(x.key) + '">' + fmt(x.value) + '</span><small>' + unit + '</small></div>' +
+        '<div class="stand">' + (i + 1) + '</div></div>';
+    }).join('') + '</div>' : '';
+    var rows = rest.map(function (x, j) {
+      return '<div class="rrow' + (x.you ? ' you' : '') + '"><span class="rank">' + (j + 4) + '</span>' + avatar(x.alias, true) +
+        '<div class="grow"><div class="rtop"><span class="name">' + esc(x.alias) + '</span><span class="gpill">' + esc(gtext(x.gender)) + '</span>' + (x.you ? '<span class="pill">You</span>' : '') + '</div>' +
+        '<div class="sub">' + esc(x.detail) + '</div>' +
+        '<div class="meter"><i data-rm="' + esc(x.key) + '" style="width:' + Math.max(4, Math.round(x.value / max * 100)) + '%"></i></div></div>' +
+        '<div class="rval"><span data-rv="' + esc(x.key) + '">' + fmt(x.value) + '</span><small>' + unit + '</small></div></div>';
+    }).join('');
+    return chips + '<p class="critnote">' + esc(NOTE[k]) + '</p>' +
+      '<p class="standing" id="standing">' + esc(standingText(items)) + '</p>' + podium + '<div class="rlist">' + rows + '</div>';
+  }
+  function updateRanks() {
+    var sc = document.querySelector('.screen'); if (!sc || S.view.name !== 'ranks') return;
+    var items = rankItems(), sig = items.map(function (x) { return x.key; }).join('|');
+    if (sig !== S.rankSig) { var t = sc.scrollTop; sc.innerHTML = ranksInner(); sc.scrollTop = t; return; }
+    var map = {}; items.forEach(function (x) { map[x.key] = x.value; });
+    var max = items.length ? Math.max(items[0].value, 1) : 1;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-rv]'), function (el) { var v = map[el.getAttribute('data-rv')]; if (v !== undefined) el.textContent = fmt(v); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-rm]'), function (el) { var v = map[el.getAttribute('data-rm')]; if (v !== undefined) el.style.width = Math.max(4, Math.round(v / max * 100)) + '%'; });
+    var st = $('#standing'); if (st) st.textContent = standingText(items);
+  }
+
+  /* ---------- jobs ---------- */
+  var R = '₹';
+  var WX = {
+    sunny: { label: 'Sunny', gossip: 'Hiring like it is Diwali. Offers are flying.' },
+    cloudy: { label: 'Cloudy', gossip: 'Still hiring, but every offer needs three approvals and a prayer.' },
+    stormy: { label: 'Stormy', gossip: 'Whispers of restructuring. Ask careful questions.' },
+    freeze: { label: 'Frozen', gossip: 'Hiring paused. Only replacements, and only if the boss remembers.' }
+  };
+  /* Sample companies. Names and numbers are made up to show the layout. */
+  var COMPANIES = [
+    { id: 'k1', name: 'Howrah Bridge Systems', sector: 'IT services', city: 'Kolkata', wx: 'sunny', openings: 42, days: 18, tough: 3,
+      roles: ['Backend', 'Testing', 'Support'],
+      steps: [['Online test', 'Aptitude and basic coding. Day 1 to 3.'], ['Technical interview', 'One engineer, 45 minutes. Day 5 to 8.'], ['Manager chat', 'Team fit and past projects. Day 10 to 12.'], ['HR and offer', 'Documents and salary talk. Day 14 to 18.']],
+      fresher: R + '3.5 to 5 LPA', mid: R + '9 to 16 LPA', referral: R + '15,000 after 90 days', notice: '60 days',
+      whispers: [['The online test is mostly aptitude. Practise speed, not tricks.', 61, 7], ['Offers usually go out on Fridays after 5pm.', 34, 22]] },
+    { id: 'k2', name: 'Tram & Tracks Fintech', sector: 'Fintech', city: 'Bengaluru', wx: 'cloudy', openings: 11, days: 25, tough: 4,
+      roles: ['Data', 'Payments', 'Risk'],
+      steps: [['Screening call', 'A recruiter and 20 minutes of questions.'], ['Take-home task', 'Three days given to finish it.'], ['Panel, two rounds', 'System design and a values chat.'], ['Offer', 'Salary talk only after the panel.']],
+      fresher: R + '6 to 9 LPA', mid: R + '18 to 30 LPA', referral: R + '30,000 after 6 months', notice: '90 days, buyout possible',
+      whispers: [['The take-home task takes closer to 8 hours than the 3 they promise.', 80, 6], ['Nobody discusses salary before the panel round.', 45, 10]] },
+    { id: 'k3', name: 'Ilish Foods Pvt Ltd', sector: 'FMCG', city: 'Kolkata', wx: 'freeze', openings: 0, days: 30, tough: 2,
+      roles: ['Sales', 'Supply chain'],
+      steps: [['Campus drive', 'Most hires come in through campuses.'], ['Group discussion', 'Current affairs and a case.'], ['Interview', 'Regional manager, 30 minutes.'], ['Offer', 'Letter in about a week.']],
+      fresher: R + '4 to 6 LPA', mid: R + '10 to 14 LPA', referral: 'None', notice: '30 days',
+      whispers: [['Hiring is paused till January. Only replacements.', 55, 20], ['The campus drive happens in January, same as last year.', 40, 15]] },
+    { id: 'k4', name: 'Rosogolla Retail Tech', sector: 'E-commerce', city: 'Remote first', wx: 'stormy', openings: 6, days: 12, tough: 2,
+      roles: ['Operations', 'Design'],
+      steps: [['Portfolio or case', 'Send past work or solve a small case.'], ['Interview', 'Two people, one hour.'], ['Founder chat', 'Short and decisive.'], ['Offer', 'Within two days of the chat.']],
+      fresher: R + '3 to 4.5 LPA', mid: R + '8 to 12 LPA', referral: R + '10,000 after 90 days', notice: '30 days',
+      whispers: [['Restructuring whispers are going around. Ask about runway before accepting.', 38, 41], ['The founder chat is friendly and quick.', 62, 5]] },
+    { id: 'k5', name: 'Sandesh Health Labs', sector: 'Healthtech', city: 'Pune', wx: 'sunny', openings: 28, days: 21, tough: 3,
+      roles: ['Clinical data', 'QA', 'Sales'],
+      steps: [['Screening', 'Resume check and a phone call.'], ['Domain test', 'Healthcare basics, 60 minutes.'], ['Panel', 'Two senior people.'], ['HR round', 'Notice period and joining date.'], ['Background check', 'About a week.'], ['Offer', 'After the check clears.']],
+      fresher: R + '4 to 6 LPA', mid: R + '10 to 18 LPA', referral: R + '25,000 after 6 months', notice: '60 days',
+      whispers: [['The background check is slow. Do not resign before it clears.', 72, 4], ['They like candidates who ask about patient data privacy.', 29, 18]] },
+    { id: 'k6', name: 'Puchka Games Studio', sector: 'Gaming', city: 'Hyderabad', wx: 'cloudy', openings: 9, days: 16, tough: 3,
+      roles: ['Game dev', 'Art', 'QA'],
+      steps: [['Portfolio review', 'Show shipped or finished work.'], ['Tech or art test', 'Five days to finish.'], ['Team fit chat', 'Meet the people you would work with.'], ['Offer', 'Fast once the team says yes.']],
+      fresher: R + '3.5 to 6 LPA', mid: R + '10 to 20 LPA', referral: 'None', notice: '45 days',
+      whispers: [['Finished small projects beat big unfinished ones in the portfolio round.', 66, 8], ['Crunch before launch is real. Ask about it directly.', 58, 12]] }
+  ];
+  function getCompany(id) { for (var i = 0; i < COMPANIES.length; i++) if (COMPANIES[i].id === id) return COMPANIES[i]; return null; }
+  function wxPill(k) { return '<span class="wx ' + k + '"><i></i>' + WX[k].label + '</span>'; }
+  function dots(n) { var s = ''; for (var i = 1; i <= 5; i++) s += '<span class="dot' + (i <= n ? ' on' : '') + '"></span>'; return '<span class="dots" role="img" aria-label="Interview toughness ' + n + ' of 5">' + s + '</span>'; }
+
+  function jobsView() {
+    var f = S.jf;
+    var chips = '<div class="chips" role="group" aria-label="Hiring weather">' + [['all', 'All']].concat(Object.keys(WX).map(function (k) { return [k, WX[k].label]; })).map(function (c) {
+      return '<button class="chipbtn" data-act="jfilter" data-k="' + c[0] + '" aria-pressed="' + (f === c[0] ? 'true' : 'false') + '">' + c[1] + '</button>';
+    }).join('') + '</div>';
+    var list = COMPANIES.filter(function (c) { return f === 'all' || c.wx === f; });
+    return '<div class="infocard"><div class="fieldlabel" style="margin:0">How hiring usually runs</div>' +
+      '<div class="flow"><span>Apply</span><span>Screening</span><span>Interviews</span><span>Offer</span></div>' +
+      '<p class="small">Most offers take two to five weeks. Before you resign, get the notice period, the background check and the joining date in writing.</p>' +
+      '<p class="small"><b>Sample companies.</b> Names and numbers here are made up to show the layout. Real companies fill in as employees share what they know.</p></div>' +
+      chips + '<div class="label">Hiring weather by company</div>' +
+      (list.length ? list.map(function (c) {
+        return '<button class="row" data-act="company" data-id="' + c.id + '"><div class="grow"><div class="name">' + esc(c.name) + '</div>' +
+          '<div class="sub">' + esc(c.sector) + ' · ' + esc(c.city) + '</div></div>' +
+          '<div class="end">' + wxPill(c.wx) + '<span class="days">' + c.openings + ' openings · ~' + c.days + 'd</span></div></button>';
+      }).join('') : '<div class="empty">No company in this weather right now.</div>');
+  }
+  function companySheet(c) {
+    return '<h2>' + esc(c.name) + '</h2>' +
+      '<p class="small">' + esc(c.sector) + ' · ' + esc(c.city) + ' · sample data</p>' +
+      '<div class="line">' + wxPill(c.wx) + '<span class="days">' + c.openings + ' openings</span></div>' +
+      '<p class="small">' + esc(WX[c.wx].gossip) + '</p>' +
+      '<div><div class="fieldlabel">Hiring for</div><div class="tagrow">' + c.roles.map(function (r) { return '<span class="gpill">' + esc(r) + '</span>'; }).join('') + '</div></div>' +
+      '<div><div class="fieldlabel">How they hire, about ' + c.days + ' days</div><ol class="steps">' + c.steps.map(function (s, i) {
+        return '<li><span class="sn">' + (i + 1) + '</span><div><b>' + esc(s[0]) + '</b><div class="small">' + esc(s[1]) + '</div></div></li>';
+      }).join('') + '</ol></div>' +
+      '<div class="stats"><div class="stat"><div class="t">Fresher</div><div class="n" style="font-size:20px">' + esc(c.fresher) + '</div></div>' +
+      '<div class="stat"><div class="t">3 to 6 years</div><div class="n" style="font-size:20px">' + esc(c.mid) + '</div></div></div>' +
+      '<div class="small">Referral bonus: ' + esc(c.referral) + '<br>Notice period: ' + esc(c.notice) + '<br>Interview toughness: ' + dots(c.tough) + '</div>' +
+      '<div><div class="fieldlabel">Insider whispers <span class="small" style="font-weight:400">(unverified, vote on them in Feed)</span></div>' + c.whispers.map(function (w) {
+        var pc = Math.round(w[1] / (w[1] + w[2]) * 100);
+        return '<p class="whisper">' + esc(w[0]) + '<span class="small"> ' + pc + '% say pakki khabar</span></p>';
+      }).join('') + '</div>' +
+      '<button class="btn block" data-act="whisper" data-id="' + c.id + '">Whisper about this company</button>' +
+      '<button class="btn ghost block" data-act="closesheet">Done</button>';
+  }
+
+  /* ---------- security ---------- */
+  var SEC = [
+    ['Your number is sealed', 'on', 'Mixed with a random salt on your device. Only the seal is kept, and the number is never shown.'],
+    ['Secret name', 'on', 'Others see a made-up name, your gender and your days. Nothing else.'],
+    ['Posts stored encrypted', 'on', 'Each post is encrypted with AES-256 here in the demo. The real app encrypts in storage and in transit.'],
+    ['Chats vanish after reading', 'on', 'A message disappears once read, unless both people agree to keep it.'],
+    ['Slip-guard', 'on', 'Warns you before you post an email, phone number, link or employee ID.'],
+    ['Panic wipe', 'on', 'One button clears everything this app holds on your device.'],
+    ['Screenshot shield', 'part', 'The web version blurs and warns. The phone app uses the system block where the phone allows it.'],
+    ['Server-side secret for numbers', 'plan', 'The real app verifies your number by OTP, keeps only a keyed token and drops the number, so it cannot be guessed back.'],
+    ['No tracking of posts', 'plan', 'The real app keeps no IP address or device log tied to a post.'],
+    ['Moderators never see numbers', 'plan', 'Reported posts show text only. No identity tools, even for staff.']
+  ];
+  var ST = { on: 'On', part: 'Partly', plan: 'Planned' };
+  function securitySheet() {
+    var on = SEC.filter(function (s) { return s[1] === 'on'; }).length, part = SEC.filter(function (s) { return s[1] === 'part'; }).length, plan = SEC.length - on - part;
+    var armed = S.wipeArm && Date.now() - S.wipeArm < 4000;
+    return '<h2>Security Center</h2>' +
+      '<p class="small">' + on + ' on, ' + part + ' partly, ' + plan + ' planned for the real app. This page shows what the prototype does today and what the real app must add.</p>' +
+      '<div>' + SEC.map(function (s) {
+        return '<div class="secrow"><div><b>' + esc(s[0]) + '</b><div class="small">' + esc(s[2]) + '</div></div><span class="st ' + s[1] + '">' + ST[s[1]] + '</span></div>';
+      }).join('') + '</div>' +
+      '<button class="btn ghost block" data-act="wipe">' + (armed ? 'Tap again to wipe everything' : 'Panic wipe') + '</button>' +
+      '<button class="btn block" data-act="closesheet">Done</button>';
+  }
+  function wipe() {
+    if (!(S.wipeArm && Date.now() - S.wipeArm < 4000)) { S.wipeArm = Date.now(); renderSheet(); return; }
+    S.wipeArm = 0;
+    try { localStorage.removeItem('kanakani.me'); } catch (e) { /* ignore */ }
+    S.me = null; S.contacts = seedContacts(); S.rooms = seedRooms(); S.posts = seedPosts(); S.rank = 'liked'; S.tag = 'all'; S.view = { name: 'feed' }; S.sheet = null;
+    S.ob = { step: 'form', num: '98300 12345', alias: '', seal: '', gender: 'Prefer not to say' };
+    renderSheet(); render(); toast('Wiped. Nothing of you is left on this device.');
+  }
+
+  /* ---------- chat ---------- */
+  function msgHTML(c, m) {
+    if (m.state === 'gone') return '<div class="vanished">vanished</div>';
+    if (m.state === 'sealed') return '<button class="msg them sealed" data-act="open" data-m="' + m.id + '">Tap to open · vanishes after you read</button>';
+    var cls = m.from === 'me' ? 'me' : 'them';
+    if (m.state === 'sent') return '<div class="msg me">' + esc(m.text) + '<div class="meta">Delivered</div></div>';
+    var h = '<div class="msg ' + cls + '">' + esc(m.text);
+    if (m.state === 'kept') {
+      h += '<div class="meta"><span class="badge">Kept by both</span></div>';
+    } else {
+      h += '<div class="bar" data-bar="' + m.id + '"><i></i></div><div class="meta">';
+      if (m.theirAsk) {
+        h += '<span>' + esc(c.alias) + ' wants to keep this</span><button class="mini solid" data-act="allowkeep" data-m="' + m.id + '">Allow</button><button class="mini" data-act="denykeep" data-m="' + m.id + '">Not now</button>';
+      } else if (m.keepState === 'asking') {
+        h += '<span>Asking ' + esc(c.alias) + '…</span>';
+      } else {
+        h += (m.from === 'me' ? '<span>Seen</span>' : '') + '<button class="mini" data-act="keep" data-m="' + m.id + '">Keep</button>';
+        if (m.keepState === 'declined') h += '<span>' + esc(c.alias) + ' passed</span>';
+      }
+      h += '</div>';
+    }
+    return h + '</div>';
+  }
+
+  function chatMsgsHTML(c) {
+    if (!c.msgs.length) return '<div class="empty">Nothing here yet. Say something. It will vanish after it is read.</div>';
+    return c.msgs.map(function (m) { return m.sys ? '<div class="sysnote">' + esc(m.text) + '</div>' : msgHTML(c, m); }).join('');
+  }
+
+  function chatScreen(c) {
+    return '<div class="detail" id="detail">' +
+      '<header class="top"><button class="icon" data-act="back" aria-label="Back">' + I.back + '</button>' + avatar(c.alias) +
+      '<div class="grow"><div class="name">' + esc(c.alias) + '</div><div class="sub">' + I.flame + ' ' + c.days + ' days · <span class="' + (c.allowShot ? 'ok' : 'warn') + '">' + (c.allowShot ? 'Screenshots allowed' : 'Screenshots blocked') + '</span></div></div>' +
+      '<button class="icon" data-act="shotsheet" aria-label="Screenshot settings">' + I.shield + '</button></header>' +
+      '<div class="msgs" id="msgs">' + chatMsgsHTML(c) + '</div>' +
+      '<form class="composer" id="composer"><input class="field" id="draft" maxlength="280" autocomplete="off" placeholder="Write something. It vanishes after it is read." aria-label="Message"><button class="send" type="submit" aria-label="Send">' + I.send + '</button></form></div>';
+  }
+
+  function pause(m) { m.remaining = Math.max(0, m.expiresAt - Date.now()); m.paused = true; }
+  function resume(m) { m.expiresAt = Date.now() + Math.max(3500, m.remaining); m.paused = false; }
+
+  function refreshMsgs() {
+    var el = $('#msgs'); if (!el) return;
+    var atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 90;
+    var c = curChat(), r = curRoom();
+    if (c) el.innerHTML = chatMsgsHTML(c);
+    else if (r && r.tab === 'chat') el.innerHTML = roomMsgsHTML(r);
+    if (atBottom) el.scrollTop = el.scrollHeight;
+  }
+
+  function openMsg(id) {
+    var m = findMsg(id), c = curChat(); if (!m || !c || m.state !== 'sealed') return;
+    m.state = 'open'; m.expiresAt = Date.now() + m.dur; refreshMsgs();
+  }
+  function askKeep(id) {
+    var m = findMsg(id), c = curChat(); if (!m || !c || m.state !== 'open' || m.keepState === 'asking') return;
+    m.keepState = 'asking'; pause(m); refreshMsgs();
+    setTimeout(function () {
+      if (m.state !== 'open') return;
+      if (Math.random() < 0.65) { m.state = 'kept'; m.paused = false; toast(c.alias + ' agreed. Saved for both of you.'); }
+      else { m.keepState = 'declined'; resume(m); toast(c.alias + ' would rather let it vanish.'); }
+      refreshMsgs();
+    }, 1800);
+  }
+  function answerKeep(id, yes) {
+    var m = findMsg(id); if (!m) return;
+    m.theirAsk = false;
+    if (yes) { m.state = 'kept'; m.paused = false; toast('Saved for both of you.'); } else { resume(m); toast('Okay. It will still vanish.'); }
+    refreshMsgs();
+  }
+
+  function sendChat(text) {
+    var c = curChat(); if (!c) return;
+    var m = mk('me', text, 'sent'); c.msgs.push(m); refreshMsgs(); bump('msgs');
+    setTimeout(function () {
+      if (m.state !== 'sent') return;
+      m.state = 'open'; m.expiresAt = Date.now() + m.dur; refreshMsgs();
+      setTimeout(function () {
+        if (m.state === 'open' && !m.paused && !m.keepState && Math.random() < 0.3) { pause(m); m.theirAsk = true; refreshMsgs(); }
+      }, 1500);
+    }, 1400);
+    if (Math.random() < 0.6) {
+      setTimeout(function () { c.msgs.push(mk('them', pick(REPLIES), 'sealed')); refreshMsgs(); }, 4200);
+    }
+  }
+
+  /* ---------- screenshot shield ---------- */
+  function blackout(ms) {
+    var d = $('#detail'); if (!d) return;
+    d.classList.add('blackout');
+    setTimeout(function () { var x = $('#detail'); if (x) x.classList.remove('blackout'); }, ms);
+  }
+  function shotAttempt() {
+    var c = curChat(), r = curRoom();
+    if (!c && !r) { toast('Open a chat or room to test the screenshot shield.'); return; }
+    if (c && c.allowShot) { toast(c.alias + ' allowed screenshots in this chat. Yours would go through.'); return; }
+    blackout(2500);
+    var note = c ? c.alias + ' was told you tried to take a screenshot.' : 'The room was told you tried to take a screenshot.';
+    if (c) { c.msgs.push({ id: ++mid, sys: true, text: 'You tried to take a screenshot. ' + c.alias + ' was told.', state: 'sys' }); refreshMsgs(); }
+    toast('Screenshot blocked. ' + note);
+  }
+  document.addEventListener('keydown', function (e) {
+    var k = (e.key || '').toLowerCase();
+    var hit = k === 'printscreen' || (e.shiftKey && (e.metaKey || e.ctrlKey) && (k === '3' || k === '4' || k === '5' || k === 's'));
+    if (hit && (curChat() || curRoom())) shotAttempt();
+  });
+  document.addEventListener('keyup', function (e) {
+    if ((e.key || '').toLowerCase() === 'printscreen' && (curChat() || curRoom())) shotAttempt();
+  });
+  document.addEventListener('visibilitychange', function () {
+    var c = curChat();
+    var guarded = (c && !c.allowShot) || curRoom();
+    var d = $('#detail'); if (!d || !guarded) return;
+    if (document.hidden) d.classList.add('blackout'); else setTimeout(function () { var x = $('#detail'); if (x) x.classList.remove('blackout'); }, 250);
+  });
+  document.addEventListener('contextmenu', function (e) { if (e.target.closest && e.target.closest('.msgs')) e.preventDefault(); });
+
+  function shotSheet() {
+    var c = curChat(); if (!c) return '';
+    var theirs;
+    if (c.allowShot) theirs = '<span class="status ok">Allowed. You can screenshot this chat.</span>';
+    else if (c.shotAsk === 'pending') theirs = '<span class="status">Waiting for ' + esc(c.alias) + '…</span>';
+    else if (c.shotAsk === 'denied') theirs = '<span class="status warn">' + esc(c.alias) + ' said not now.</span> <button class="mini" data-act="askshot">Ask again</button>';
+    else theirs = '<span class="status warn">Blocked until ' + esc(c.alias) + ' says yes.</span>';
+    return '<h2>Screenshots in this chat</h2>' +
+      '<div><div class="fieldlabel">' + esc(c.alias) + ' → you</div><p>' + theirs + '</p>' +
+      (!c.allowShot && c.shotAsk !== 'pending' && c.shotAsk !== 'denied' ? '<div style="margin-top:10px"><button class="btn" data-act="askshot">Ask ' + esc(c.alias) + ' for permission</button></div>' : '') + '</div>' +
+      '<div class="line"><div><div class="fieldlabel" style="margin:0">Let ' + esc(c.alias) + ' screenshot my messages</div><span class="small">Off unless you turn it on. You can switch it back any time.</span></div>' +
+      '<button class="switch" role="switch" aria-checked="' + (c.iAllow ? 'true' : 'false') + '" aria-label="Allow screenshots of my messages" data-act="toggleallow"></button></div>' +
+      '<p class="small">On the web, Kanakani can only blur the chat and warn the other person. The phone app uses the screenshot block built into the phone where one exists.</p>' +
+      '<div class="btnrow" style="padding:0"><button class="btn ghost" data-act="simshot">Test: simulate a screenshot</button><button class="btn ghost" data-act="report">Report this chat</button></div>' +
+      '<button class="btn block" data-act="closesheet">Done</button>';
+  }
+
+  function askShot() {
+    var c = curChat(); if (!c) return;
+    c.shotAsk = 'pending'; renderSheet();
+    setTimeout(function () {
+      if (Math.random() < 0.7) { c.allowShot = true; c.shotAsk = 'idle'; toast(c.alias + ' allowed screenshots.'); }
+      else { c.shotAsk = 'denied'; }
+      var cc = curChat();
+      if (cc && cc.id === c.id) { render(true); }
+      if (S.sheet && S.sheet.name === 'shots') renderSheet();
+    }, 2500);
+  }
+
+  /* ---------- rooms ---------- */
+  function roomMsgsHTML(r) {
+    var live = r.msgs.filter(function (m) { return m.state === 'live'; });
+    if (!live.length) return '<div class="empty">' + (r.save ? 'No messages yet. Everything posted here is saved.' : 'Quiet in here. Messages fade after 15 seconds.') + '</div>';
+    return live.map(function (m) {
+      var alias = m.mine ? S.me.alias : m.alias, days = m.mine ? S.me.days : m.days;
+      var tail = r.save
+        ? '<div class="meta"><button class="star" data-act="star" data-m="' + m.id + '" aria-pressed="' + (m.star ? 'true' : 'false') + '" aria-label="' + (m.star ? 'Remove from memories' : 'Add to memories') + '">' + I.star(m.star) + '</button><span>' + (m.star ? 'In memories' : 'Star to keep as a memory') + '</span></div>'
+        : '<div class="bar" data-bar="' + m.id + '"><i></i></div>';
+      return '<div class="msg ' + (m.mine ? 'me' : 'them') + '"><div class="who">' + esc(alias) + ' <span class="days">' + I.flame + ' ' + days + 'd</span></div>' + esc(m.text) + tail + '</div>';
+    }).join('');
+  }
+
+  function roomMembers(r) {
+    var all = r.members.map(function (x) { return { alias: x.alias, days: x.days, gender: x.gender, you: false }; });
+    all.push({ alias: S.me.alias, days: S.me.days, gender: S.me.gender, you: true });
+    return all.sort(function (a, b) { return b.days - a.days; });
+  }
+
+  function roomScreen(r) {
+    var chips = [['chat', 'Chat'], ['memories', 'Memories'], ['members', 'Members']].map(function (t) {
+      return '<button class="chipbtn" data-act="rtab" data-t="' + t[0] + '" aria-pressed="' + (r.tab === t[0] ? 'true' : 'false') + '">' + t[1] + '</button>';
+    }).join('');
+    var body, composer = '';
+    if (r.tab === 'chat') {
+      body = '<div class="msgs" id="msgs">' + roomMsgsHTML(r) + '</div>';
+      composer = '<form class="composer" id="composer"><input class="field" id="draft" maxlength="280" autocomplete="off" placeholder="' + (r.save ? 'Post to the room. It is saved.' : 'Post to the room. It fades in 15s.') + '" aria-label="Message"><button class="send" type="submit" aria-label="Send">' + I.send + '</button></form>';
+    } else if (r.tab === 'memories') {
+      var mem = r.msgs.filter(function (m) { return m.star; });
+      body = '<div class="screen">' + (!r.save ? '<div class="empty">This room does not save anything. Memories are only kept in rooms created with saving on.</div>' :
+        mem.length ? '<div class="msgs">' + mem.map(function (m) {
+          var alias = m.mine ? S.me.alias : m.alias;
+          return '<div class="msg them"><div class="who">' + esc(alias) + '</div>' + esc(m.text) + '</div>';
+        }).join('') + '</div>' : '<div class="empty">Tap the star on any message to keep it here as a memory.</div>') + '</div>';
+    } else {
+      body = '<div class="screen members"><div class="label">Highest streak first</div>' + roomMembers(r).map(function (x, i) {
+        return '<div class="row"><span class="rank">' + (i + 1) + '</span>' + avatar(x.alias, true) +
+          '<div class="grow"><div class="name">' + esc(x.alias) + (x.you ? ' (you)' : '') + '</div><div class="sub"><span class="gpill">' + esc(gtext(x.gender)) + '</span></div></div>' +
+          '<span class="days">' + I.flame + ' ' + x.days + 'd</span>' + (i === 0 ? '<span class="pill">Top streak</span>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    return '<div class="detail" id="detail">' +
+      '<header class="top"><button class="icon" data-act="back" aria-label="Back">' + I.back + '</button>' +
+      '<div class="grow"><div class="name">' + esc(r.name) + '</div><div class="sub">' + (r.members.length + 1) + ' members · ' + (r.save ? 'Saves chat and memories' : 'Vanishing room') + ' · screenshots off</div></div>' +
+      '<button class="icon" data-act="invite" data-id="' + r.id + '" aria-label="Invite link">' + I.link + '</button></header>' +
+      '<div class="chips">' + chips + '</div>' + body + composer + '</div>';
+  }
+
+  function sendRoom(text) {
+    var r = curRoom(); if (!r || r.tab !== 'chat') return;
+    var m = { id: ++mid, alias: S.me.alias, days: S.me.days, text: text, mine: true, state: 'live', star: false, dur: 15000, expiresAt: Date.now() + 15000 };
+    r.msgs.push(m); refreshMsgs(); bump('msgs');
+    if (Math.random() < 0.6 && r.members.length) {
+      setTimeout(function () {
+        var p = pick(r.members);
+        var n = roomMsg(p.alias, p.days, pick(ROOM_REPLIES));
+        n.expiresAt = Date.now() + 15000;
+        r.msgs.push(n);
+        if (curRoom() && curRoom().id === r.id) refreshMsgs();
+      }, 2200);
+    }
+  }
+
+  function codeGen() {
+    var a = 'abcdefghjkmnpqrstuvwxyz23456789', s = '';
+    for (var i = 0; i < 8; i++) { s += a.charAt(rnd(a.length)); if (i === 3) s += '-'; }
+    return s;
+  }
+
+  function newRoomSheet() {
+    return '<h2>New room</h2><p class="small">A room is for people you trust. Everyone in it appears with their secret name and streak.</p>' +
+      '<form id="newform" class="sheet" style="padding:0;animation:none;max-height:none" novalidate>' +
+      '<div><label class="fieldlabel" for="rname">Room name</label><input class="field" id="rname" maxlength="40" autocomplete="off" placeholder="Friday Chai Club"></div>' +
+      '<div class="line"><div><div class="fieldlabel" style="margin:0">Save chat and memories</div><span class="small" id="savehint">Messages stay in the room and you can star memories.</span></div>' +
+      '<button type="button" class="switch" id="saveswitch" role="switch" aria-checked="' + (S.sheet.save ? 'true' : 'false') + '" aria-label="Save chat and memories" data-act="togglesave"></button></div>' +
+      '<p class="err" id="rnerr" role="alert"></p>' +
+      '<button class="btn block" type="submit">Create room and get link</button></form>';
+  }
+  function createRoom() {
+    var name = $('#rname').value.trim();
+    if (!name) { $('#rnerr').textContent = 'Give the room a name.'; return; }
+    var r = { id: 'r' + (++mid), name: name, save: S.sheet.save, link: 'kanakani.app/r/' + codeGen(), tab: 'chat', members: [], msgs: [] };
+    S.rooms.push(r); S.sheet = { name: 'invite', id: r.id }; S.view = { name: 'room', id: r.id };
+    render(); renderSheet();
+  }
+  function inviteSheet(r) {
+    return '<h2>Invite link</h2><p class="small">Anyone with this link can join with their own secret name. Share it only with people you trust.</p>' +
+      '<div class="linkbox" id="linktext">' + esc(r.link) + '</div>' +
+      '<button class="btn block" data-act="copy" data-link="' + esc(r.link) + '">' + I.copy + ' Copy link</button>' +
+      '<button class="btn ghost block" data-act="closesheet">Done</button>';
+  }
+  function joinSheet() {
+    return '<h2>Join with a link</h2><p class="small">Paste the invite link a friend sent you. You will join as ' + esc(S.me.alias) + '.</p>' +
+      '<form id="joinform" class="sheet" style="padding:0;animation:none;max-height:none" novalidate>' +
+      '<div><label class="fieldlabel" for="jlink">Invite link</label><input class="field" id="jlink" autocomplete="off" placeholder="kanakani.app/r/abcd-2345"></div>' +
+      '<p class="err" id="jerr" role="alert"></p><button class="btn block" type="submit">Join room</button></form>';
+  }
+  function doJoin() {
+    var v = $('#jlink').value.trim();
+    var m = v.match(/([a-z0-9]{4}-[a-z0-9]{4})\/?$/i);
+    if (!m) { $('#jerr').textContent = 'That link does not look right. It should end like abcd-2345.'; return; }
+    var code = m[1].toLowerCase();
+    var ex = S.rooms.filter(function (r) { return r.link.slice(-9) === code; })[0];
+    if (ex) { closeSheet(); S.view = { name: 'room', id: ex.id }; render(); toast('You are already in this room.'); return; }
+    var mem = POOL.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+    var r = { id: 'r' + (++mid), name: 'Room ' + code, save: true, link: 'kanakani.app/r/' + code, tab: 'chat', members: mem,
+      msgs: [roomMsg(mem[0].alias, mem[0].days, 'Welcome. Whatever is said here stays here.')] };
+    S.rooms.push(r); closeSheet(); S.view = { name: 'room', id: r.id }; render();
+    toast('Joined as ' + S.me.alias + '. Members only see this name.');
+  }
+
+  /* ---------- sheets ---------- */
+  function renderSheet() {
+    var sh = S.sheet;
+    if (!sh) { layer.innerHTML = ''; return; }
+    var inner = '';
+    if (sh.name === 'shots') inner = shotSheet();
+    else if (sh.name === 'newroom') inner = newRoomSheet();
+    else if (sh.name === 'join') inner = joinSheet();
+    else if (sh.name === 'company') { var co = getCompany(sh.id); inner = co ? companySheet(co) : ''; }
+    else if (sh.name === 'security') inner = securitySheet();
+    else if (sh.name === 'invite') { var r = getRoom(sh.id); inner = r ? inviteSheet(r) : ''; }
+    layer.innerHTML = '<div class="scrim"><div class="sheet" role="dialog" aria-modal="true">' + inner + '</div></div>';
+    var f = layer.querySelector('input'); if (f) f.focus();
+  }
+  function openSheet(s) { S.sheet = s; renderSheet(); }
+  function closeSheet() { S.sheet = null; renderSheet(); }
+
+  /* ---------- render ---------- */
+  function render(keepScroll) {
+    if (!S.me) { renderOnboard(); return; }
+    var v = S.view;
+    if (v.name === 'chat' && getContact(v.id)) {
+      var old = $('#msgs'); var top = old ? old.scrollTop : 0;
+      root.innerHTML = chatScreen(getContact(v.id));
+      var el = $('#msgs'); el.scrollTop = keepScroll ? top : el.scrollHeight;
+      return;
+    }
+    if (v.name === 'room' && getRoom(v.id)) {
+      root.innerHTML = roomScreen(getRoom(v.id));
+      var m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
+      return;
+    }
+    var tab = ['rooms', 'me', 'feed', 'ranks', 'jobs'].indexOf(v.name) >= 0 ? v.name : 'chats';
+    var content = tab === 'rooms' ? roomsView() : tab === 'me' ? meView() : tab === 'feed' ? feedView() : tab === 'ranks' ? ranksInner() : tab === 'jobs' ? jobsView() : chatsView();
+    root.innerHTML = topbar() + '<div class="screen">' + content + '</div>' + tabs(tab);
+  }
+
+  /* ---------- timers ---------- */
+  setInterval(function () {
+    var now = Date.now(), changed = false, i, j;
+    for (i = 0; i < S.contacts.length; i++) {
+      var ms = S.contacts[i].msgs;
+      for (j = 0; j < ms.length; j++) {
+        if (ms[j].state === 'open' && !ms[j].paused && ms[j].expiresAt <= now) { ms[j].state = 'gone'; changed = true; }
+      }
+    }
+    for (i = 0; i < S.rooms.length; i++) {
+      var r = S.rooms[i];
+      if (r.save) continue;
+      for (j = 0; j < r.msgs.length; j++) {
+        if (r.msgs[j].state === 'live' && r.msgs[j].expiresAt <= now) { r.msgs[j].state = 'gone'; changed = true; }
+      }
+    }
+    if (changed) refreshMsgs();
+    var bars = document.querySelectorAll('[data-bar]');
+    for (i = 0; i < bars.length; i++) {
+      var m = findMsg(parseInt(bars[i].getAttribute('data-bar'), 10)); if (!m) continue;
+      var rem = m.paused ? m.remaining : m.expiresAt - now;
+      bars[i].firstElementChild.style.width = Math.max(0, Math.min(100, rem / m.dur * 100)) + '%';
+    }
+  }, 200);
+
+  /* Views and likes keep growing so the rankings move while you watch. */
+  setInterval(function () {
+    if (!S.me) return;
+    S.posts.forEach(function (p) {
+      if (p.mine) { p.views += 2 + rnd(7); if (Math.random() < 0.4) p.likes++; }
+      else { p.views += rnd(5); if (Math.random() < 0.2) p.likes++; }
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-views]'), function (el) { var p = findPost(parseInt(el.getAttribute('data-views'), 10)); if (p) el.textContent = fmt(p.views); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-likes]'), function (el) { var p = findPost(parseInt(el.getAttribute('data-likes'), 10)); if (p) el.textContent = fmt(p.likes); });
+    if (S.view.name === 'ranks' && !S.sheet) updateRanks();
+  }, 2500);
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t.classList && t.classList.contains('scrim')) { closeSheet(); return; }
+    var b = t.closest ? t.closest('[data-act]') : null; if (!b) return;
+    var act = b.getAttribute('data-act'), id = b.getAttribute('data-id'), mi = parseInt(b.getAttribute('data-m'), 10);
+    switch (act) {
+      case 'enter': enter(); break;
+      case 'tab': S.view = { name: b.getAttribute('data-tab') }; render(); break;
+      case 'openchat': S.view = { name: 'chat', id: id }; render(); break;
+      case 'openroom': S.view = { name: 'room', id: id }; render(); break;
+      case 'back': S.view = { name: S.view.name === 'room' ? 'rooms' : 'chats' }; render(); break;
+      case 'open': openMsg(mi); break;
+      case 'keep': askKeep(mi); break;
+      case 'allowkeep': answerKeep(mi, true); break;
+      case 'denykeep': answerKeep(mi, false); break;
+      case 'shotsheet': openSheet({ name: 'shots' }); break;
+      case 'askshot': askShot(); break;
+      case 'toggleallow':
+        var c = curChat(); if (!c) break;
+        c.iAllow = !c.iAllow; b.setAttribute('aria-checked', c.iAllow ? 'true' : 'false');
+        toast(c.iAllow ? c.alias + ' can now screenshot your messages.' : 'Your messages are protected again.'); break;
+      case 'simshot': closeSheet(); shotAttempt(); break;
+      case 'report': closeSheet(); toast('Reported. A moderator sees the messages you report, never anyone’s number.'); break;
+      case 'closesheet': closeSheet(); break;
+      case 'gender':
+        S.ob.gender = b.getAttribute('data-g');
+        Array.prototype.forEach.call(b.parentNode.children, function (x) { x.setAttribute('aria-checked', x === b ? 'true' : 'false'); });
+        break;
+      case 'like': toggleLike(mi); break;
+      case 'vote': castVote(mi, b.getAttribute('data-v')); break;
+      case 'settle': settle(mi, b.getAttribute('data-o')); break;
+      case 'ptag':
+        S.ptag = b.getAttribute('data-t');
+        Array.prototype.forEach.call(b.parentNode.children, function (x) { x.setAttribute('aria-checked', x === b ? 'true' : 'false'); });
+        break;
+      case 'ftag': S.tag = b.getAttribute('data-t'); render(); break;
+      case 'jfilter': S.jf = b.getAttribute('data-k'); render(); break;
+      case 'company': openSheet({ name: 'company', id: id }); break;
+      case 'whisper':
+        var co = getCompany(id); closeSheet();
+        S.ptag = 'Hiring buzz'; S.tag = 'all'; S.prefill = 'About ' + (co ? co.name : 'this company') + ': ';
+        S.view = { name: 'feed' }; render();
+        var ta0 = $('#postdraft'); if (ta0) { ta0.focus(); ta0.setSelectionRange(ta0.value.length, ta0.value.length); }
+        break;
+      case 'security': openSheet({ name: 'security' }); break;
+      case 'wipe': wipe(); break;
+      case 'delpost': delPost(mi); break;
+      case 'crit': S.rank = b.getAttribute('data-k'); render(); break;
+      case 'newroom': openSheet({ name: 'newroom', save: true }); break;
+      case 'joinroom': openSheet({ name: 'join' }); break;
+      case 'togglesave':
+        S.sheet.save = !S.sheet.save; b.setAttribute('aria-checked', S.sheet.save ? 'true' : 'false');
+        $('#savehint').textContent = S.sheet.save ? 'Messages stay in the room and you can star memories.' : 'Messages fade 15 seconds after they are posted.'; break;
+      case 'invite': openSheet({ name: 'invite', id: id }); break;
+      case 'copy':
+        var link = b.getAttribute('data-link');
+        var done = function () { toast('Link copied.'); };
+        var sel = function () {
+          var n = $('#linktext'); if (!n) return;
+          var rg = document.createRange(); rg.selectNodeContents(n);
+          var s = window.getSelection(); s.removeAllRanges(); s.addRange(rg); toast('Press copy on your keyboard to finish.');
+        };
+        try { navigator.clipboard.writeText(link).then(done, sel); } catch (err) { sel(); }
+        break;
+      case 'rtab': var r = curRoom(); if (r) { r.tab = b.getAttribute('data-t'); render(); } break;
+      case 'star':
+        var rr = curRoom(), msg = findMsg(mi); if (rr && msg) { msg.star = !msg.star; refreshMsgs(); toast(msg.star ? 'Added to memories.' : 'Removed from memories.'); } break;
+      case 'ffwd': S.me.days++; persist(); render(); toast('Day ' + S.me.days + '. Your name moves up in every list.'); break;
+      case 'reset':
+        try { localStorage.removeItem('kanakani.me'); } catch (err2) { /* ignore */ }
+        S.me = null; S.contacts = seedContacts(); S.rooms = seedRooms(); S.sheet = null; renderSheet();
+        S.posts = seedPosts(); S.rank = 'liked'; S.view = { name: 'feed' };
+        S.ob = { step: 'form', num: '98300 12345', alias: '', seal: '', gender: 'Prefer not to say' }; render(); break;
+    }
+  });
+
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'postdraft') {
+      S.slipAck = false;
+      var f = slipCheck(e.target.value), sl = $('#slip'), pb = $('#postbtn');
+      if (sl) sl.textContent = f.length ? 'Heads up: this has ' + f.join(' and ') + '. Anyone who knows you could trace it.' : '';
+      if (pb) pb.textContent = 'Post';
+    }
+  });
+
+  document.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var id = e.target.id;
+    if (id === 'composer') {
+      var inp = $('#draft'), text = inp.value.trim(); if (!text) return;
+      inp.value = '';
+      if (S.view.name === 'chat') sendChat(text); else if (S.view.name === 'room') sendRoom(text);
+      inp.focus();
+    } else if (id === 'newform') createRoom();
+    else if (id === 'joinform') doJoin();
+    else if (id === 'obform') makeName();
+    else if (id === 'postform') addPost();
+  });
+
+  var I18N = {"bn": {"Current affairs and a case.": "সাম্প্রতিক বিষয় আর একটা কেস।", "Regional manager, 30 minutes.": "আঞ্চলিক ম্যানেজার, ৩০ মিনিট।", "System design and a values chat.": "সিস্টেম ডিজাইন আর মূল্যবোধ নিয়ে আলাপ।", "Three days given to finish it.": "শেষ করতে তিন দিন দেওয়া হয়।", "Two senior people.": "দুজন সিনিয়র মানুষ।", "Short and decisive.": "ছোট আর চূড়ান্ত।", "Domain test": "ডোমেন টেস্ট", "Healthcare basics, 60 minutes.": "স্বাস্থ্যসেবার প্রাথমিক বিষয়, ৬০ মিনিট।", "HR round": "এইচআর রাউন্ড", "Notice period and joining date.": "নোটিস পিরিয়ড আর যোগদানের তারিখ।", "Portfolio or case": "পোর্টফোলিও বা কেস", "Send past work or solve a small case.": "আগের কাজ পাঠাও বা একটা ছোট কেস সমাধান করো।", "Tech or art test": "টেক বা আর্ট টেস্ট", "Show shipped or finished work.": "শেষ করা বা লঞ্চ হওয়া কাজ দেখাও।", "Meet the people you would work with.": "যাদের সঙ্গে কাজ করবে তাদের সঙ্গে দেখা করো।", "About a week.": "প্রায় এক সপ্তাহ।", "After the check clears.": "চেক শেষ হওয়ার পরে।", "Within two days of the chat.": "আলাপের দুই দিনের মধ্যে।", "Fast once the team says yes.": "টিম হ্যাঁ বললে দ্রুত হয়।", "Five days to finish.": "শেষ করতে পাঁচ দিন।", "Two people, one hour.": "দুজন মানুষ, এক ঘণ্টা।", "Finished small projects beat big unfinished ones in the portfolio round.": "পোর্টফোলিও রাউন্ডে বড় অসমাপ্ত কাজের চেয়ে শেষ করা ছোট প্রজেক্ট এগিয়ে থাকে।", "They like candidates who ask about patient data privacy.": "যারা রোগীর তথ্যের গোপনীয়তা নিয়ে প্রশ্ন করে তাদের ওরা পছন্দ করে।", "On": "চালু", "Off": "বন্ধ", "Feed": "ফিড", "Chats": "চ্যাট", "Rooms": "রুম", "Jobs": "চাকরি", "Ranks": "র‍্যাঙ্ক", "Me": "আমি", "Chat": "চ্যাট", "Back": "ফিরে যাও", "Sections": "বিভাগ", "Language": "ভাষা", "Done": "হয়েছে", "All": "সব", "Everything": "সবকিছু", "Post": "পোস্ট", "Posts": "পোস্ট", "Send": "পাঠাও", "Message": "বার্তা", "Like": "লাইক", "Views": "ভিউ", "likes": "লাইক", "Report this chat": "এই চ্যাট রিপোর্ট করো", "Days you have been on Kanakani": "কানাকানিতে তোমার কত দিন হলো", "কানাকানি": "কানাকানি", "Say it quietly.": "ফিসফিস করে বলো।", "Sign up with your number. Kanakani turns it into a silly secret name and locks the number away, so no message can be traced back to you.": "নম্বর দিয়ে সাইন আপ করো। কানাকানি সেটাকে একটা মজার গোপন নামে বদলে দেয় আর নম্বরটা তালা দিয়ে রাখে, তাই কোনো বার্তা তোমার কাছে ফিরে আসবে না।", "Mobile number": "মোবাইল নম্বর", "Gender shown next to your name": "নামের পাশে যে লিঙ্গ দেখাবে", "Woman": "নারী", "Man": "পুরুষ", "Non-binary": "নন-বাইনারি", "Prefer not to say": "বলতে চাই না", "Not shared": "জানানো হয়নি", "Make my secret name": "আমার গোপন নাম বানাও", "A sample number is filled in for this demo. Nothing leaves this page.": "এই ডেমোর জন্য একটা নমুনা নম্বর বসানো আছে। এই পাতা থেকে কিছুই বাইরে যায় না।", "Enter a 10-digit mobile number.": "১০ সংখ্যার মোবাইল নম্বর দাও।", "Picking your name": "তোমার নাম বাছা হচ্ছে", "Your secret name": "তোমার গোপন নাম", "Vault seal for your number": "তোমার নম্বরের ভল্ট সিল", "Vault seal": "ভল্ট সিল", "Your number is mixed with a random salt on this device. Only the seal above is kept.": "তোমার নম্বর এই ফোনেই একটা র‍্যান্ডম নুনের সঙ্গে মিশিয়ে দেওয়া হয়। শুধু ওপরের সিলটাই রাখা হয়।", "Messages vanish after they are read, unless both of you choose to keep them.": "পড়া হয়ে গেলে বার্তা মিলিয়ে যায়, যদি না দুজনেই রেখে দিতে চাও।", "Enter Kanakani": "কানাকানিতে ঢোকো", "Welcome to the secret side of the office.": "অফিসের গোপন দিকে স্বাগতম।", "Hot on the tapri": "চায়ের দোকানের গরম খবর", "Fresh off the tapri": "সদ্য চায়ের দোকান থেকে", "Spill the chai": "চা-টা ফাঁস করো", "Whisper it here. Your name stays in the matka.": "এখানে ফিসফিস করে বলো। তোমার নাম মাটির ভাঁড়েই থাকবে।", "Stored encrypted. Others see only your secret name and gender.": "এনক্রিপ্ট করে রাখা হয়। অন্যরা শুধু তোমার গোপন নাম আর লিঙ্গ দেখে।", "Topic": "বিষয়", "Filter by topic": "বিষয় অনুযায়ী ছাঁকো", "Office life": "অফিস জীবন", "Boss radar": "বস রাডার", "Canteen": "ক্যান্টিন", "Cake alert": "কেক অ্যালার্ট", "Hiring buzz": "নিয়োগের গুঞ্জন", "Pakki khabar": "পাক্কা খবর", "Gappa": "গাপ্পা", "Came true": "সত্যি হয়েছে", "Busted": "ফাঁস হয়ে গেছে", "Post anyway": "তবু পোস্ট করো", "You cannot like your own post": "নিজের পোস্টে নিজে লাইক দেওয়া যায় না", "Delete": "মুছে দাও", "Post deleted. It also leaves the rankings.": "পোস্ট মুছে গেছে। র‍্যাঙ্কিং থেকেও সরে গেল।", "A blank whisper is just silence. Write something.": "ফাঁকা ফিসফিস মানে শুধু চুপ। কিছু লেখো।", "Share of settled rumours that came true": "নিষ্পত্তি হওয়া গুজবের কত শতাংশ সত্যি হয়েছে", "Oracle": "ওরাকল", "Most liked": "সবচেয়ে বেশি লাইক", "Most viewed": "সবচেয়ে বেশি দেখা", "Most accurate": "সবচেয়ে নির্ভুল", "Heavy users": "সবচেয়ে সক্রিয়", "Longest streak": "সবচেয়ে লম্বা স্ট্রিক", "Ranking criteria": "র‍্যাঙ্কিংয়ের মাপকাঠি", "Single posts ranked by likes. One post, one place.": "লাইক অনুযায়ী আলাদা আলাদা পোস্টের র‍্যাঙ্ক। একটা পোস্ট, একটাই জায়গা।", "Single posts ranked by how many people opened them.": "কতজন খুলে দেখেছে সেই অনুযায়ী পোস্টের র‍্যাঙ্ক।", "Who is right most often. When a rumour plays out, its author marks it Came true or Busted. You need 3 settled rumours to enter.": "কে সবচেয়ে বেশিবার ঠিক বলে। গুজব মিটে গেলে লেখক সেটাকে সত্যি বা ফাঁস হিসেবে চিহ্নিত করে। তালিকায় ঢুকতে ৩টি মীমাংসিত গুজব লাগে।", "Who uses Kanakani the most. 5 points per post, 2 per chat message, 1 per like given and 1 per day here.": "কানাকানি কে সবচেয়ে বেশি ব্যবহার করে। প্রতি পোস্টে ৫ পয়েন্ট, প্রতি চ্যাট বার্তায় ২, প্রতি লাইকে ১ আর প্রতিদিনের জন্য ১।", "Who has been on Kanakani the most days.": "কানাকানিতে কে সবচেয়ে বেশি দিন আছে।", "Oldest gossipers first": "সবচেয়ে পুরনো গসিপাররা আগে", "Likes received": "পাওয়া লাইক", "Rumours settled": "মীমাংসিত গুজব", "Truth score": "সত্যের স্কোর", "Activity points": "কার্যকলাপের পয়েন্ট", "Days here": "এখানে কত দিন", "None of your posts is in the top 10 yet. Spill something in Feed to get on this list.": "তোমার কোনো পোস্ট এখনো প্রথম ১০-এ নেই। এই তালিকায় আসতে ফিডে কিছু ফাঁস করো।", "You are": "তুমি", "Nothing waiting": "কিছু অপেক্ষায় নেই", "Tap to open · vanishes after you read": "খুলতে ছোঁও · পড়লেই মিলিয়ে যাবে", "Nothing here yet. Say something. It will vanish after it is read.": "এখানে এখনো কিছু নেই। কিছু বলো। পড়া হলেই মিলিয়ে যাবে।", "Write something. It vanishes after it is read.": "কিছু লেখো। পড়া হলেই মিলিয়ে যাবে।", "Save chat and memories": "চ্যাট আর স্মৃতি সেভ করো", "Add to memories": "স্মৃতিতে যোগ করো", "Remove from memories": "স্মৃতি থেকে সরাও", "Star to keep as a memory": "স্মৃতি করে রাখতে তারা দাও", "In memories": "স্মৃতিতে আছে", "Memories": "স্মৃতি", "Keep": "রাখো", "Not now": "এখন না", "Allow": "অনুমতি দাও", "Chats vanish after reading": "পড়লেই চ্যাট মিলিয়ে যায়", "A message disappears once read, unless both people agree to keep it.": "পড়া হলেই বার্তা মিলিয়ে যায়, যদি না দুজনেই রাখতে রাজি হও।", "Reported. A moderator sees the messages you report, never anyone’s number.": "রিপোর্ট হয়েছে। মডারেটর শুধু তুমি যে বার্তা রিপোর্ট করেছ সেটা দেখে, কারও নম্বর কখনো নয়।", "Screenshot settings": "স্ক্রিনশট সেটিংস", "Screenshots in this chat": "এই চ্যাটে স্ক্রিনশট", "Screenshots blocked": "স্ক্রিনশট বন্ধ", "Screenshots allowed": "স্ক্রিনশট চালু", "Allow screenshots of my messages": "আমার বার্তার স্ক্রিনশটের অনুমতি দাও", "Off unless you turn it on. You can switch it back any time.": "তুমি চালু না করলে বন্ধ থাকে। যখন খুশি আবার বন্ধ করতে পারো।", "On the web, Kanakani can only blur the chat and warn the other person. The phone app uses the screenshot block built into the phone where one exists.": "ওয়েবে কানাকানি শুধু চ্যাট ঝাপসা করতে আর অন্যজনকে সতর্ক করতে পারে। ফোন অ্যাপ ফোনের নিজস্ব স্ক্রিনশট-ব্লক ব্যবহার করে, যেখানে সেটা আছে।", "Test: simulate a screenshot": "পরীক্ষা: স্ক্রিনশট নেওয়ার ভান", "Open a chat or room to test the screenshot shield.": "স্ক্রিনশট-ঢাল পরীক্ষা করতে একটা চ্যাট বা রুম খোলো।", "Your messages are protected again.": "তোমার বার্তা আবার সুরক্ষিত।", "Screenshot shield": "স্ক্রিনশট-ঢাল", "Partly": "আংশিক", "Planned": "পরিকল্পিত", "Demo controls": "ডেমো নিয়ন্ত্রণ", "Fast-forward one day": "এক দিন এগিয়ে দাও", "Your rooms": "তোমার রুম", "New room": "নতুন রুম", "Join with link": "লিংক দিয়ে ঢোকো", "Room name": "রুমের নাম", "Friday Chai Club": "শুক্রবারের চা-চক্র", "Give the room a name.": "রুমের একটা নাম দাও।", "Create room and get link": "রুম বানাও আর লিংক নাও", "A room is for people you trust. Everyone in it appears with their secret name and streak.": "রুম তাদের জন্য যাদের তুমি বিশ্বাস করো। সবাই নিজের গোপন নাম আর স্ট্রিক নিয়ে থাকে।", "Members": "সদস্য", "Invite link": "আমন্ত্রণ লিংক", "Copy link": "লিংক কপি করো", "Link copied.": "লিংক কপি হয়েছে।", "Anyone with this link can join with their own secret name. Share it only with people you trust.": "এই লিংক যার কাছে আছে সে নিজের গোপন নামে ঢুকতে পারবে। শুধু বিশ্বাসী লোকদের দাও।", "Post to the room. It is saved.": "রুমে পোস্ট করো। এটা সেভ থাকবে।", "Post to the room. It fades in 15s.": "রুমে পোস্ট করো। ১৫ সেকেন্ডে মিলিয়ে যাবে।", "Messages stay in the room and you can star memories.": "বার্তা রুমে থেকে যায়, আর তুমি স্মৃতিতে তারা দিতে পারো।", "Messages fade 15 seconds after they are posted.": "পোস্টের ১৫ সেকেন্ড পরে বার্তা মিলিয়ে যায়।", "Messages fade after 15s": "১৫ সেকেন্ডে বার্তা মিলিয়ে যায়", "Vanishing room": "মিলিয়ে-যাওয়া রুম", "Saves chat and memories": "চ্যাট আর স্মৃতি সেভ করে", "No messages yet. Everything posted here is saved.": "এখনো কোনো বার্তা নেই। এখানে যা পোস্ট হয় সবই সেভ থাকে।", "Quiet in here. Messages fade after 15 seconds.": "এখানে চুপচাপ। বার্তা ১৫ সেকেন্ডে মিলিয়ে যায়।", "That link does not look right. It should end like abcd-2345.": "লিংকটা ঠিক মনে হচ্ছে না। শেষটা abcd-2345 এর মতো হওয়া উচিত।", "You are already in this room.": "তুমি এই রুমে আগে থেকেই আছ।", "Report": "রিপোর্ট", "How hiring usually runs": "নিয়োগ সাধারণত কীভাবে চলে", "Apply": "আবেদন", "Screening": "বাছাই", "Interviews": "ইন্টারভিউ", "Offer": "অফার", "Most offers take two to five weeks. Before you resign, get the notice period, the background check and the joining date in writing.": "বেশিরভাগ অফারে দুই থেকে পাঁচ সপ্তাহ লাগে। ইস্তফা দেওয়ার আগে নোটিস পিরিয়ড, ব্যাকগ্রাউন্ড চেক আর যোগদানের তারিখ লিখিতভাবে নিয়ে নাও।", "Names and numbers here are made up to show the layout. Real companies fill in as employees share what they know.": "এখানকার নাম আর সংখ্যা সাজানোর নমুনা দেখাতে বানানো। কর্মীরা যা জানে শেয়ার করলে আসল কোম্পানি যোগ হবে।", "Sample companies.": "নমুনা কোম্পানি।", "Hiring weather by company": "কোম্পানি অনুযায়ী নিয়োগের আবহাওয়া", "Hiring weather": "নিয়োগের আবহাওয়া", "Sunny": "রোদ্দুর", "Cloudy": "মেঘলা", "Stormy": "ঝড়ো", "Frozen": "জমাট", "Hiring like it is Diwali. Offers are flying.": "দিওয়ালির মতো নিয়োগ চলছে। অফার উড়ছে।", "Still hiring, but every offer needs three approvals and a prayer.": "এখনো নিয়োগ চলছে, কিন্তু প্রতিটা অফারে তিনটে অনুমোদন আর একটা প্রার্থনা লাগে।", "Hiring is paused till January. Only replacements.": "জানুয়ারি পর্যন্ত নিয়োগ বন্ধ। শুধু বদলি।", "Hiring paused. Only replacements, and only if the boss remembers.": "নিয়োগ বন্ধ। শুধু বদলি, আর তাও বস মনে রাখলে।", "Hiring for": "যে পদে নিয়োগ", "Fresher": "ফ্রেশার", "3 to 6 years": "৩ থেকে ৬ বছর", "Interview toughness:": "ইন্টারভিউ কতটা কঠিন:", "Insider whispers": "ভেতরের ফিসফিস", "(unverified, vote on them in Feed)": "(যাচাই হয়নি, ফিডে ভোট দাও)", "Whisper about this company": "এই কোম্পানি নিয়ে ফিসফিস করো", "Chats and posts about hiring": "নিয়োগ নিয়ে চ্যাট আর পোস্ট", "Risk": "ঝুঁকি", "Payments": "পেমেন্ট", "Data": "ডেটা", "Backend": "ব্যাকএন্ড", "Testing": "টেস্টিং", "Support": "সাপোর্ট", "Sales": "সেলস", "Design": "ডিজাইন", "Operations": "অপারেশন", "Supply chain": "সাপ্লাই চেন", "Game dev": "গেম ডেভ", "Clinical data": "ক্লিনিক্যাল ডেটা", "Technical interview": "টেকনিক্যাল ইন্টারভিউ", "Online test": "অনলাইন টেস্ট", "Group discussion": "গ্রুপ ডিসকাশন", "Panel, two rounds": "প্যানেল, দুই রাউন্ড", "Screening call": "স্ক্রিনিং কল", "Take-home task": "বাড়িতে করার কাজ", "HR and offer": "এইচআর আর অফার", "Manager chat": "ম্যানেজারের সঙ্গে কথা", "Team fit chat": "টিমে মানানোর আলাপ", "Founder chat": "প্রতিষ্ঠাতার সঙ্গে কথা", "Portfolio review": "পোর্টফোলিও দেখা", "Background check": "ব্যাকগ্রাউন্ড চেক", "Interview": "ইন্টারভিউ", "Panel": "প্যানেল", "None": "নেই", "Campus drive": "ক্যাম্পাস ড্রাইভ", "Most hires come in through campuses.": "বেশিরভাগ নিয়োগ ক্যাম্পাস থেকেই হয়।", "Resume check and a phone call.": "সিভি দেখা আর একটা ফোন।", "A recruiter and 20 minutes of questions.": "একজন রিক্রুটার আর ২০ মিনিটের প্রশ্ন।", "Aptitude and basic coding. Day 1 to 3.": "অ্যাপটিটিউড আর সহজ কোডিং। ১ থেকে ৩ দিন।", "One engineer, 45 minutes. Day 5 to 8.": "একজন ইঞ্জিনিয়ার, ৪৫ মিনিট। ৫ থেকে ৮ দিন।", "Team fit and past projects. Day 10 to 12.": "টিমে মানানো আর আগের প্রজেক্ট। ১০ থেকে ১২ দিন।", "Documents and salary talk. Day 14 to 18.": "নথিপত্র আর বেতনের কথা। ১৪ থেকে ১৮ দিন।", "Letter in about a week.": "প্রায় এক সপ্তাহে চিঠি।", "Salary talk only after the panel.": "বেতনের কথা শুধু প্যানেলের পরে।", "Nobody discusses salary before the panel round.": "প্যানেল রাউন্ডের আগে কেউ বেতন নিয়ে কথা বলে না।", "Offers usually go out on Fridays after 5pm.": "অফার সাধারণত শুক্রবার বিকেল ৫টার পরে যায়।", "The campus drive happens in January, same as last year.": "ক্যাম্পাস ড্রাইভ গত বছরের মতোই জানুয়ারিতে হয়।", "The online test is mostly aptitude. Practise speed, not tricks.": "অনলাইন টেস্টে বেশিরভাগই অ্যাপটিটিউড। চালাকি নয়, গতির অনুশীলন করো।", "The take-home task takes closer to 8 hours than the 3 they promise.": "বাড়ির কাজটা ৩ ঘণ্টার কথা বললেও লাগে প্রায় ৮ ঘণ্টা।", "The background check is slow. Do not resign before it clears.": "ব্যাকগ্রাউন্ড চেক ধীর। সেটা শেষ না হওয়া পর্যন্ত ইস্তফা দিয়ো না।", "The founder chat is friendly and quick.": "প্রতিষ্ঠাতার সঙ্গে আলাপ আন্তরিক আর দ্রুত।", "Crunch before launch is real. Ask about it directly.": "লঞ্চের আগে চাপ সত্যিই থাকে। সরাসরি জিজ্ঞেস করো।", "Restructuring whispers are going around. Ask about runway before accepting.": "পুনর্গঠনের ফিসফিস ঘুরছে। হ্যাঁ বলার আগে রানওয়ে নিয়ে জিজ্ঞেস করো।", "Whispers of restructuring. Ask careful questions.": "পুনর্গঠনের ফিসফিস। সাবধানে প্রশ্ন করো।", "Security Center": "নিরাপত্তা কেন্দ্র", "Shown beside your name:": "নামের পাশে যা দেখায়:", "Your number never appears anywhere in the app. Open Kanakani every day to climb the streak list. The more days you have, the higher your name sits in chats and rooms.": "তোমার নম্বর অ্যাপের কোথাও দেখা যায় না। স্ট্রিক তালিকায় ওপরে উঠতে রোজ কানাকানি খোলো। যত বেশি দিন, চ্যাট আর রুমে তোমার নাম তত ওপরে।", "Your number is sealed": "তোমার নম্বর সিল করা", "Mixed with a random salt on your device. Only the seal is kept, and the number is never shown.": "তোমার ফোনে একটা র‍্যান্ডম নুনের সঙ্গে মেশানো হয়। শুধু সিলটা রাখা হয়, নম্বর কখনো দেখানো হয় না।", "The real app verifies your number by OTP, keeps only a keyed token and drops the number, so it cannot be guessed back.": "আসল অ্যাপ ওটিপি দিয়ে নম্বর যাচাই করে, শুধু চাবি-দেওয়া একটা টোকেন রাখে আর নম্বর ফেলে দেয়, তাই সেটা আন্দাজ করে ফেরানো যায় না।", "Secret name": "গোপন নাম", "Others see a made-up name, your gender and your days. Nothing else.": "অন্যরা একটা বানানো নাম, তোমার লিঙ্গ আর তোমার দিন দেখে। আর কিছু নয়।", "Posts stored encrypted": "পোস্ট এনক্রিপ্ট করে রাখা", "Each post is encrypted with AES-256 here in the demo. The real app encrypts in storage and in transit.": "এই ডেমোতে প্রতিটা পোস্ট AES-256 দিয়ে এনক্রিপ্ট হয়। আসল অ্যাপ জমানোর সময় আর পাঠানোর সময়, দুই জায়গাতেই এনক্রিপ্ট করে।", "Slip-guard": "স্লিপ-গার্ড", "Warns you before you post an email, phone number, link or employee ID.": "ইমেল, ফোন নম্বর, লিংক বা কর্মী আইডি পোস্ট করার আগে সতর্ক করে।", "Moderators never see numbers": "মডারেটর কখনো নম্বর দেখে না", "Reported posts show text only. No identity tools, even for staff.": "রিপোর্ট করা পোস্টে শুধু লেখা দেখা যায়। কর্মীদের জন্যও পরিচয় বের করার কোনো উপায় নেই।", "No tracking of posts": "পোস্টের কোনো ট্র্যাকিং নেই", "The real app keeps no IP address or device log tied to a post.": "আসল অ্যাপ কোনো পোস্টের সঙ্গে আইপি ঠিকানা বা ডিভাইস লগ জুড়ে রাখে না।", "Panic wipe": "প্যানিক ওয়াইপ", "One button clears everything this app holds on your device.": "একটা বোতামেই তোমার ফোনে অ্যাপের জমানো সবকিছু মুছে যায়।", "Tap again to wipe everything": "সব মুছতে আবার ছোঁও", "Wiped. Nothing of you is left on this device.": "মুছে গেছে। এই ফোনে তোমার কিছুই আর নেই।", "Start over": "নতুন করে শুরু", "The web version blurs and warns. The phone app uses the system block where the phone allows it.": "ওয়েব সংস্করণ ঝাপসা করে আর সতর্ক করে। ফোন অ্যাপ যেখানে ফোন অনুমতি দেয় সেখানে সিস্টেমের ব্লক ব্যবহার করে।", "Spilled. Others see only your secret name and gender.": "ফাঁস হয়ে গেল। অন্যরা শুধু তোমার গোপন নাম আর লিঙ্গ দেখে।", "5 members · Saves chat and memories": "৫ জন সদস্য · চ্যাট আর স্মৃতি সেভ করে", "5 members · Saves chat and memories · screenshots off": "৫ জন সদস্য · চ্যাট আর স্মৃতি সেভ করে · স্ক্রিনশট বন্ধ"}, "hi": {"Current affairs and a case.": "समसामयिक विषय और एक केस।", "Regional manager, 30 minutes.": "रीजनल मैनेजर, 30 मिनट।", "System design and a values chat.": "सिस्टम डिज़ाइन और मूल्यों पर बातचीत।", "Three days given to finish it.": "पूरा करने के लिए तीन दिन मिलते हैं।", "Two senior people.": "दो वरिष्ठ लोग।", "Short and decisive.": "छोटा और निर्णायक।", "Domain test": "डोमेन टेस्ट", "Healthcare basics, 60 minutes.": "हेल्थकेयर की बुनियादी बातें, 60 मिनट।", "HR round": "एचआर राउंड", "Notice period and joining date.": "नोटिस अवधि और जॉइनिंग की तारीख़।", "Portfolio or case": "पोर्टफ़ोलियो या केस", "Send past work or solve a small case.": "पुराना काम भेजें या एक छोटा केस हल करें।", "Tech or art test": "टेक या आर्ट टेस्ट", "Show shipped or finished work.": "पूरा किया या लॉन्च किया हुआ काम दिखाएँ।", "Meet the people you would work with.": "जिनके साथ काम करेंगे उनसे मिलें।", "About a week.": "लगभग एक हफ़्ता।", "After the check clears.": "चेक पूरा होने के बाद।", "Within two days of the chat.": "बातचीत के दो दिन के भीतर।", "Fast once the team says yes.": "टीम के हाँ कहते ही तेज़ी से होता है।", "Five days to finish.": "पूरा करने के लिए पाँच दिन।", "Two people, one hour.": "दो लोग, एक घंटा।", "Finished small projects beat big unfinished ones in the portfolio round.": "पोर्टफ़ोलियो राउंड में बड़े अधूरे प्रोजेक्ट से पूरे किए छोटे प्रोजेक्ट आगे रहते हैं।", "They like candidates who ask about patient data privacy.": "जो उम्मीदवार मरीज़ों के डेटा की निजता के बारे में पूछते हैं वे उन्हें पसंद आते हैं।", "On": "चालू", "Off": "बंद", "Feed": "फ़ीड", "Chats": "चैट", "Rooms": "कमरे", "Jobs": "नौकरियाँ", "Ranks": "रैंक", "Me": "मैं", "Chat": "चैट", "Back": "वापस", "Sections": "अनुभाग", "Language": "भाषा", "Done": "हो गया", "All": "सभी", "Everything": "सब कुछ", "Post": "पोस्ट", "Posts": "पोस्ट", "Send": "भेजें", "Message": "संदेश", "Like": "पसंद", "Views": "व्यू", "likes": "पसंद", "Report this chat": "इस चैट की रिपोर्ट करें", "Days you have been on Kanakani": "कानाकानी पर आपके कितने दिन हुए", "কানাকানি": "कानाकानी", "Say it quietly.": "धीरे से कहो।", "Sign up with your number. Kanakani turns it into a silly secret name and locks the number away, so no message can be traced back to you.": "अपने नंबर से साइन अप करें। कानाकानी उसे एक मज़ेदार गुप्त नाम में बदल देता है और नंबर पर ताला लगा देता है, इसलिए कोई संदेश आप तक नहीं पहुँचाया जा सकता।", "Mobile number": "मोबाइल नंबर", "Gender shown next to your name": "नाम के साथ दिखने वाला लिंग", "Woman": "महिला", "Man": "पुरुष", "Non-binary": "नॉन-बाइनरी", "Prefer not to say": "बताना नहीं चाहते", "Not shared": "बताया नहीं", "Make my secret name": "मेरा गुप्त नाम बनाएँ", "A sample number is filled in for this demo. Nothing leaves this page.": "इस डेमो के लिए एक नमूना नंबर भरा है। इस पेज से कुछ भी बाहर नहीं जाता।", "Enter a 10-digit mobile number.": "10 अंकों का मोबाइल नंबर डालें।", "Picking your name": "आपका नाम चुना जा रहा है", "Your secret name": "आपका गुप्त नाम", "Vault seal for your number": "आपके नंबर की वॉल्ट सील", "Vault seal": "वॉल्ट सील", "Your number is mixed with a random salt on this device. Only the seal above is kept.": "आपका नंबर इसी डिवाइस पर एक रैंडम नमक के साथ मिला दिया जाता है। सिर्फ़ ऊपर की सील रखी जाती है।", "Messages vanish after they are read, unless both of you choose to keep them.": "पढ़ने के बाद संदेश गायब हो जाते हैं, जब तक आप दोनों उन्हें रखना न चुनें।", "Enter Kanakani": "कानाकानी में आएँ", "Welcome to the secret side of the office.": "ऑफ़िस के गुप्त पहलू में स्वागत है।", "Hot on the tapri": "टपरी की गरमा-गरम खबर", "Fresh off the tapri": "टपरी से ताज़ा-ताज़ा", "Spill the chai": "चाय छलका दो", "Whisper it here. Your name stays in the matka.": "यहाँ फुसफुसाइए। आपका नाम मटके में ही रहेगा।", "Stored encrypted. Others see only your secret name and gender.": "एन्क्रिप्ट करके रखा जाता है। बाकी लोग सिर्फ़ आपका गुप्त नाम और लिंग देखते हैं।", "Topic": "विषय", "Filter by topic": "विषय के अनुसार छाँटें", "Office life": "ऑफ़िस लाइफ़", "Boss radar": "बॉस रडार", "Canteen": "कैंटीन", "Cake alert": "केक अलर्ट", "Hiring buzz": "भर्ती की हलचल", "Pakki khabar": "पक्की खबर", "Gappa": "गप्प", "Came true": "सच निकली", "Busted": "झूठ निकली", "Post anyway": "फिर भी पोस्ट करें", "You cannot like your own post": "अपनी पोस्ट को आप पसंद नहीं कर सकते", "Delete": "हटाएँ", "Post deleted. It also leaves the rankings.": "पोस्ट हट गई। रैंकिंग से भी हट गई।", "A blank whisper is just silence. Write something.": "खाली फुसफुसाहट बस ख़ामोशी है। कुछ लिखिए।", "Share of settled rumours that came true": "तय हुई अफ़वाहों में से कितनी सच निकलीं", "Oracle": "ओरेकल", "Most liked": "सबसे ज़्यादा पसंद", "Most viewed": "सबसे ज़्यादा देखी गई", "Most accurate": "सबसे सटीक", "Heavy users": "सबसे सक्रिय", "Longest streak": "सबसे लंबी स्ट्रीक", "Ranking criteria": "रैंकिंग के मानदंड", "Single posts ranked by likes. One post, one place.": "लाइक के हिसाब से अलग-अलग पोस्ट की रैंक। एक पोस्ट, एक जगह।", "Single posts ranked by how many people opened them.": "कितने लोगों ने खोला, उसके हिसाब से पोस्ट की रैंक।", "Who is right most often. When a rumour plays out, its author marks it Came true or Busted. You need 3 settled rumours to enter.": "सबसे ज़्यादा बार सही कौन निकलता है। अफ़वाह का नतीजा आने पर लेखक उसे सच या झूठ चिह्नित करता है। सूची में आने के लिए 3 तय अफ़वाहें चाहिए।", "Who uses Kanakani the most. 5 points per post, 2 per chat message, 1 per like given and 1 per day here.": "कानाकानी का सबसे ज़्यादा इस्तेमाल कौन करता है। हर पोस्ट पर 5 अंक, हर चैट संदेश पर 2, हर दिए लाइक पर 1 और यहाँ बिताए हर दिन पर 1।", "Who has been on Kanakani the most days.": "कानाकानी पर सबसे ज़्यादा दिन से कौन है।", "Oldest gossipers first": "सबसे पुराने गपशप करने वाले पहले", "Likes received": "मिले लाइक", "Rumours settled": "तय हुई अफ़वाहें", "Truth score": "सच का स्कोर", "Activity points": "गतिविधि अंक", "Days here": "यहाँ कितने दिन", "None of your posts is in the top 10 yet. Spill something in Feed to get on this list.": "आपकी कोई पोस्ट अभी टॉप 10 में नहीं है। इस सूची में आने के लिए फ़ीड में कुछ बताइए।", "You are": "आप हैं", "Nothing waiting": "कुछ इंतज़ार में नहीं", "Tap to open · vanishes after you read": "खोलने के लिए टैप करें · पढ़ते ही गायब", "Nothing here yet. Say something. It will vanish after it is read.": "यहाँ अभी कुछ नहीं है। कुछ कहिए। पढ़ने के बाद गायब हो जाएगा।", "Write something. It vanishes after it is read.": "कुछ लिखिए। पढ़ने के बाद गायब हो जाएगा।", "Save chat and memories": "चैट और यादें सहेजें", "Add to memories": "यादों में जोड़ें", "Remove from memories": "यादों से हटाएँ", "Star to keep as a memory": "याद बनाकर रखने के लिए स्टार करें", "In memories": "यादों में है", "Memories": "यादें", "Keep": "रखें", "Not now": "अभी नहीं", "Allow": "अनुमति दें", "Chats vanish after reading": "पढ़ते ही चैट गायब हो जाती है", "A message disappears once read, unless both people agree to keep it.": "पढ़ते ही संदेश गायब हो जाता है, जब तक दोनों लोग रखने को राज़ी न हों।", "Reported. A moderator sees the messages you report, never anyone’s number.": "रिपोर्ट हो गई। मॉडरेटर सिर्फ़ वही संदेश देखता है जिन्हें आपने रिपोर्ट किया, किसी का नंबर कभी नहीं।", "Screenshot settings": "स्क्रीनशॉट सेटिंग", "Screenshots in this chat": "इस चैट में स्क्रीनशॉट", "Screenshots blocked": "स्क्रीनशॉट बंद", "Screenshots allowed": "स्क्रीनशॉट की अनुमति", "Allow screenshots of my messages": "मेरे संदेशों के स्क्रीनशॉट की अनुमति दें", "Off unless you turn it on. You can switch it back any time.": "आप चालू न करें तो बंद रहता है। जब चाहें वापस बंद कर सकते हैं।", "On the web, Kanakani can only blur the chat and warn the other person. The phone app uses the screenshot block built into the phone where one exists.": "वेब पर कानाकानी सिर्फ़ चैट को धुंधला कर सकता है और दूसरे व्यक्ति को चेतावनी दे सकता है। फ़ोन ऐप फ़ोन में बने स्क्रीनशॉट-ब्लॉक का इस्तेमाल करता है, जहाँ वह उपलब्ध है।", "Test: simulate a screenshot": "परीक्षण: स्क्रीनशॉट का अनुकरण", "Open a chat or room to test the screenshot shield.": "स्क्रीनशॉट ढाल जाँचने के लिए कोई चैट या कमरा खोलें।", "Your messages are protected again.": "आपके संदेश फिर से सुरक्षित हैं।", "Screenshot shield": "स्क्रीनशॉट ढाल", "Partly": "आंशिक", "Planned": "योजना में", "Demo controls": "डेमो नियंत्रण", "Fast-forward one day": "एक दिन आगे बढ़ाएँ", "Your rooms": "आपके कमरे", "New room": "नया कमरा", "Join with link": "लिंक से जुड़ें", "Room name": "कमरे का नाम", "Friday Chai Club": "शुक्रवार चाय क्लब", "Give the room a name.": "कमरे को एक नाम दीजिए।", "Create room and get link": "कमरा बनाएँ और लिंक पाएँ", "A room is for people you trust. Everyone in it appears with their secret name and streak.": "कमरा उन लोगों के लिए है जिन पर आप भरोसा करते हैं। हर कोई अपने गुप्त नाम और स्ट्रीक के साथ दिखता है।", "Members": "सदस्य", "Invite link": "आमंत्रण लिंक", "Copy link": "लिंक कॉपी करें", "Link copied.": "लिंक कॉपी हो गया।", "Anyone with this link can join with their own secret name. Share it only with people you trust.": "इस लिंक वाला कोई भी अपने गुप्त नाम से जुड़ सकता है। इसे सिर्फ़ भरोसेमंद लोगों से साझा करें।", "Post to the room. It is saved.": "कमरे में पोस्ट करें। यह सहेजा जाएगा।", "Post to the room. It fades in 15s.": "कमरे में पोस्ट करें। 15 सेकंड में गायब हो जाएगा।", "Messages stay in the room and you can star memories.": "संदेश कमरे में रहते हैं और आप यादों को स्टार कर सकते हैं।", "Messages fade 15 seconds after they are posted.": "पोस्ट के 15 सेकंड बाद संदेश गायब हो जाते हैं।", "Messages fade after 15s": "15 सेकंड में संदेश गायब", "Vanishing room": "गायब होने वाला कमरा", "Saves chat and memories": "चैट और यादें सहेजता है", "No messages yet. Everything posted here is saved.": "अभी कोई संदेश नहीं। यहाँ जो भी पोस्ट होता है सहेजा जाता है।", "Quiet in here. Messages fade after 15 seconds.": "यहाँ शांति है। संदेश 15 सेकंड में गायब हो जाते हैं।", "That link does not look right. It should end like abcd-2345.": "यह लिंक सही नहीं लग रहा। इसका अंत abcd-2345 जैसा होना चाहिए।", "You are already in this room.": "आप पहले से इस कमरे में हैं।", "Report": "रिपोर्ट", "How hiring usually runs": "भर्ती आमतौर पर कैसे चलती है", "Apply": "आवेदन", "Screening": "स्क्रीनिंग", "Interviews": "इंटरव्यू", "Offer": "ऑफ़र", "Most offers take two to five weeks. Before you resign, get the notice period, the background check and the joining date in writing.": "ज़्यादातर ऑफ़र में दो से पाँच हफ़्ते लगते हैं। इस्तीफ़ा देने से पहले नोटिस अवधि, बैकग्राउंड चेक और जॉइनिंग की तारीख़ लिखित में लीजिए।", "Names and numbers here are made up to show the layout. Real companies fill in as employees share what they know.": "यहाँ के नाम और संख्याएँ सिर्फ़ ढाँचा दिखाने के लिए गढ़ी गई हैं। कर्मचारी जो जानते हैं वह साझा करेंगे तो असली कंपनियाँ जुड़ती जाएँगी।", "Sample companies.": "नमूना कंपनियाँ।", "Hiring weather by company": "कंपनी के हिसाब से भर्ती का मौसम", "Hiring weather": "भर्ती का मौसम", "Sunny": "धूप", "Cloudy": "बादल", "Stormy": "तूफ़ानी", "Frozen": "जमा हुआ", "Hiring like it is Diwali. Offers are flying.": "दिवाली जैसी भर्ती चल रही है। ऑफ़र उड़ रहे हैं।", "Still hiring, but every offer needs three approvals and a prayer.": "भर्ती जारी है, पर हर ऑफ़र के लिए तीन मंज़ूरियाँ और एक दुआ चाहिए।", "Hiring is paused till January. Only replacements.": "जनवरी तक भर्ती रुकी है। सिर्फ़ रिप्लेसमेंट।", "Hiring paused. Only replacements, and only if the boss remembers.": "भर्ती रुकी है। सिर्फ़ रिप्लेसमेंट, और वह भी बॉस को याद रहे तो।", "Hiring for": "इन पदों के लिए भर्ती", "Fresher": "फ्रेशर", "3 to 6 years": "3 से 6 साल", "Interview toughness:": "इंटरव्यू की कठिनाई:", "Insider whispers": "अंदर की फुसफुसाहट", "(unverified, vote on them in Feed)": "(असत्यापित, फ़ीड में वोट दें)", "Whisper about this company": "इस कंपनी के बारे में फुसफुसाएँ", "Chats and posts about hiring": "भर्ती पर चैट और पोस्ट", "Risk": "जोखिम", "Payments": "भुगतान", "Data": "डेटा", "Backend": "बैकएंड", "Testing": "टेस्टिंग", "Support": "सपोर्ट", "Sales": "सेल्स", "Design": "डिज़ाइन", "Operations": "ऑपरेशन", "Supply chain": "सप्लाई चेन", "Game dev": "गेम डेव", "Clinical data": "क्लिनिकल डेटा", "Technical interview": "तकनीकी इंटरव्यू", "Online test": "ऑनलाइन टेस्ট", "Group discussion": "ग्रुप डिस्कशन", "Panel, two rounds": "पैनल, दो राउंड", "Screening call": "स्क्रीनिंग कॉल", "Take-home task": "घर पर करने का टास्क", "HR and offer": "एचआर और ऑफ़र", "Manager chat": "मैनेजर से बातचीत", "Team fit chat": "टीम में फ़िट होने की बात", "Founder chat": "फ़ाउंडर से बातचीत", "Portfolio review": "पोर्टफ़ोलियो समीक्षा", "Background check": "बैकग्राउंड चेक", "Interview": "इंटरव्यू", "Panel": "पैनल", "None": "कोई नहीं", "Campus drive": "कैंपस ड्राइव", "Most hires come in through campuses.": "ज़्यादातर भर्तियाँ कैंपस से होती हैं।", "Resume check and a phone call.": "रिज़्यूमे की जाँच और एक फ़ोन कॉल।", "A recruiter and 20 minutes of questions.": "एक रिक्रूटर और 20 मिनट के सवाल।", "Aptitude and basic coding. Day 1 to 3.": "एप्टीट्यूड और बेसिक कोडिंग। दिन 1 से 3।", "One engineer, 45 minutes. Day 5 to 8.": "एक इंजीनियर, 45 मिनट। दिन 5 से 8।", "Team fit and past projects. Day 10 to 12.": "टीम फ़िट और पिछले प्रोजेक्ट। दिन 10 से 12।", "Documents and salary talk. Day 14 to 18.": "दस्तावेज़ और सैलरी की बात। दिन 14 से 18।", "Letter in about a week.": "करीब एक हफ़्ते में पत्र।", "Salary talk only after the panel.": "सैलरी की बात सिर्फ़ पैनल के बाद।", "Nobody discusses salary before the panel round.": "पैनल राउंड से पहले कोई सैलरी की बात नहीं करता।", "Offers usually go out on Fridays after 5pm.": "ऑफ़र आमतौर पर शुक्रवार शाम 5 बजे के बाद जाते हैं।", "The campus drive happens in January, same as last year.": "कैंपस ड्राइव पिछले साल की तरह जनवरी में होता है।", "The online test is mostly aptitude. Practise speed, not tricks.": "ऑनलाइन टेस्ट में ज़्यादातर एप्टीट्यूड होता है। तरकीबें नहीं, रफ़्तार की प्रैक्टिस करें।", "The take-home task takes closer to 8 hours than the 3 they promise.": "घर वाले टास्क में वादे के 3 घंटे की जगह लगभग 8 घंटे लगते हैं।", "The background check is slow. Do not resign before it clears.": "बैकग्राउंड चेक धीमा है। पूरा होने से पहले इस्तीफ़ा न दें।", "The founder chat is friendly and quick.": "फ़ाउंडर से बातचीत दोस्ताना और तेज़ होती है।", "Crunch before launch is real. Ask about it directly.": "लॉन्च से पहले दबाव असली है। सीधे पूछिए।", "Restructuring whispers are going around. Ask about runway before accepting.": "पुनर्गठन की सुगबुगाहट है। हाँ कहने से पहले रनवे के बारे में पूछिए।", "Whispers of restructuring. Ask careful questions.": "पुनर्गठन की सुगबुगाहट। सोच-समझकर सवाल पूछें।", "Security Center": "सुरक्षा केंद्र", "Shown beside your name:": "नाम के साथ जो दिखता है:", "Your number never appears anywhere in the app. Open Kanakani every day to climb the streak list. The more days you have, the higher your name sits in chats and rooms.": "आपका नंबर ऐप में कहीं नहीं दिखता। स्ट्रीक सूची में ऊपर चढ़ने के लिए रोज़ कानाकानी खोलिए। जितने ज़्यादा दिन, चैट और कमरों में आपका नाम उतना ऊपर।", "Your number is sealed": "आपका नंबर सील है", "Mixed with a random salt on your device. Only the seal is kept, and the number is never shown.": "आपके डिवाइस पर एक रैंडम नमक के साथ मिलाया जाता है। सिर्फ़ सील रखी जाती है, नंबर कभी नहीं दिखाया जाता।", "The real app verifies your number by OTP, keeps only a keyed token and drops the number, so it cannot be guessed back.": "असली ऐप ओटीपी से नंबर सत्यापित करता है, सिर्फ़ चाबी वाला एक टोकन रखता है और नंबर हटा देता है, इसलिए उसे अंदाज़े से वापस नहीं निकाला जा सकता।", "Secret name": "गुप्त नाम", "Others see a made-up name, your gender and your days. Nothing else.": "बाकी लोग एक गढ़ा हुआ नाम, आपका लिंग और आपके दिन देखते हैं। और कुछ नहीं।", "Posts stored encrypted": "पोस्ट एन्क्रिप्ट करके रखी जाती हैं", "Each post is encrypted with AES-256 here in the demo. The real app encrypts in storage and in transit.": "इस डेमो में हर पोस्ट AES-256 से एन्क्रिप्ट होती है। असली ऐप स्टोरेज और ट्रांज़िट दोनों में एन्क्रिप्ट करता है।", "Slip-guard": "स्लिप-गार्ड", "Warns you before you post an email, phone number, link or employee ID.": "ईमेल, फ़ोन नंबर, लिंक या कर्मचारी आईडी पोस्ट करने से पहले चेतावनी देता है।", "Moderators never see numbers": "मॉडरेटर कभी नंबर नहीं देखते", "Reported posts show text only. No identity tools, even for staff.": "रिपोर्ट की गई पोस्ट में सिर्फ़ टेक्स्ट दिखता है। स्टाफ़ के लिए भी पहचान निकालने का कोई साधन नहीं।", "No tracking of posts": "पोस्ट की कोई ट्रैकिंग नहीं", "The real app keeps no IP address or device log tied to a post.": "असली ऐप किसी पोस्ट से जुड़ा आईपी पता या डिवाइस लॉग नहीं रखता।", "Panic wipe": "पैनिक वाइप", "One button clears everything this app holds on your device.": "एक बटन आपके डिवाइस पर ऐप का सारा डेटा मिटा देता है।", "Tap again to wipe everything": "सब मिटाने के लिए फिर टैप करें", "Wiped. Nothing of you is left on this device.": "मिट गया। इस डिवाइस पर आपका कुछ नहीं बचा।", "Start over": "फिर से शुरू करें", "The web version blurs and warns. The phone app uses the system block where the phone allows it.": "वेब संस्करण धुंधला करता है और चेतावनी देता है। फ़ोन ऐप जहाँ फ़ोन अनुमति देता है वहाँ सिस्टम ब्लॉक इस्तेमाल करता है।", "Spilled. Others see only your secret name and gender.": "छलक गया। बाकी लोग सिर्फ़ आपका गुप्त नाम और लिंग देखते हैं।", "5 members · Saves chat and memories": "5 सदस्य · चैट और यादें सहेजता है", "5 members · Saves chat and memories · screenshots off": "5 सदस्य · चैट और यादें सहेजता है · स्क्रीनशॉट बंद"}};
+  var I18N_RULES = [["^(\\d+) on, (\\d+) partly, (\\d+) planned for the real app\\. This page shows what the prototype does today and what the real app must add\\.$", "{1}টি চালু, {2}টি আংশিক, {3}টি আসল অ্যাপের জন্য পরিকল্পিত। এই পাতা দেখায় প্রোটোটাইপ আজ কী করে আর আসল অ্যাপে কী যোগ করতে হবে।", "{1} चालू, {2} आंशिक, {3} असली ऐप के लिए योजना में। यह पेज दिखाता है कि प्रोटोटाइप आज क्या करता है और असली ऐप में क्या जोड़ना होगा।"], ["^(\\d+) openings$", "{1}টি পদ", "{1} पद"], ["^(\\d+) openings · ~(\\d+)d$", "{1}টি পদ · ~{2} দিন", "{1} पद · ~{2} दिन"], ["^(\\d+)% say pakki khabar$", "{1}% বলছে পাক্কা খবর", "{1}% कहते हैं पक्की खबर"], ["^(\\d+) percent say pakki khabar$", "{1} শতাংশ বলছে পাক্কা খবর", "{1} प्रतिशत कहते हैं पक्की खबर"], ["^truth (\\d+)%$", "সত্যি {1}%", "सच {1}%"], ["^· (\\d+)m$", "· {1} মিনিট", "· {1} मिनट"], ["^· (\\d+)h$", "· {1} ঘণ্টা", "· {1} घंटे"], ["^· (\\d+)d$", "· {1} দিন", "· {1} दिन"], ["^(\\d+) d$", "{1} দিন", "{1} दिन"], ["^(\\d+)d$", "{1} দিন", "{1} दिन"], ["^(\\d+) days ·$", "{1} দিন ·", "{1} दिन ·"], ["^How they hire, about (\\d+) days$", "ওরা কীভাবে নিয়োগ করে, প্রায় {1} দিন", "वे कैसे भर्ती करते हैं, लगभग {1} दिन"], ["^About (.+):$", "{1} সম্পর্কে:", "{1} के बारे में:"], ["^Notice period: 30 days$", "নোটিস পিরিয়ড: ৩০ দিন", "नोटिस अवधि: 30 दिन"], ["^Notice period: 60 days$", "নোটিস পিরিয়ড: ৬০ দিন", "नोटिस अवधि: 60 दिन"], ["^Notice period: 90 days, buyout possible$", "নোটিস পিরিয়ড: ৯০ দিন, বাইআউট সম্ভব", "नोटिस अवधि: 90 दिन, बायआउट संभव"], ["^Referral bonus: None$", "রেফারেল বোনাস: নেই", "रेफ़रल बोनस: कोई नहीं"], ["^Referral bonus: (.+) after (\\d+) days$", "রেফারেল বোনাস: {2} দিন পরে {1}", "रेफ़रल बोनस: {2} दिन बाद {1}"], ["^Referral bonus: (.+) after 6 months$", "রেফারেল বোনাস: ৬ মাস পরে {1}", "रेफ़रल बोनस: 6 महीने बाद {1}"], ["^(\\d+) sealed snaps? waiting$", "{1}টি সিল করা বার্তা অপেক্ষায়", "{1} सीलबंद संदेश इंतज़ार में"], ["^Ask (.+) for permission$", "{1}-এর কাছে অনুমতি চাও", "{1} से अनुमति माँगें"], ["^Blocked until (.+) says yes\\.$", "{1} হ্যাঁ না বলা পর্যন্ত বন্ধ।", "{1} के हाँ कहने तक बंद।"], ["^(.+) allowed screenshots\\.$", "{1} স্ক্রিনশটের অনুমতি দিয়েছে।", "{1} ने स्क्रीनशॉट की अनुमति दी।"], ["^(.+) can now screenshot your messages\\.$", "{1} এখন তোমার বার্তার স্ক্রিনশট নিতে পারবে।", "{1} अब आपके संदेशों का स्क्रीनशॉट ले सकता है।"], ["^Let (.+) screenshot my messages$", "{1}-কে আমার বার্তার স্ক্রিনশট নিতে দাও", "{1} को मेरे संदेशों का स्क्रीनशॉट लेने दें"], ["^Waiting for (.+)…$", "{1}-এর জন্য অপেক্ষা…", "{1} का इंतज़ार…"], ["^(.+) → you$", "{1} → তুমি", "{1} → आप"], ["^Screenshot blocked\\. (.+) was told you tried to take a screenshot\\.$", "স্ক্রিনশট আটকানো হয়েছে। {1}-কে জানানো হয়েছে যে তুমি স্ক্রিনশট নিতে চেয়েছিলে।", "स्क्रीनशॉट रोका गया। {1} को बताया गया कि आपने स्क्रीनशॉट लेने की कोशिश की।"], ["^You tried to take a screenshot\\. (.+) was told\\.$", "তুমি স্ক্রিনশট নিতে চেয়েছিলে। {1}-কে জানানো হয়েছে।", "आपने स्क्रीनशॉट लेने की कोशिश की। {1} को बता दिया गया।"], ["^(\\d+) members · (.+)$", "{1} জন সদস্য · {2}", "{1} सदस्य · {2}"], ["^As (.+) · (.+)$", "{1} হিসেবে · {2}", "{1} के रूप में · {2}"], ["^(.+) · sample data$", "{1} · নমুনা তথ্য", "{1} · नमूना डेटा"], ["^Everyone else sees your secret name, your gender \\((.+)\\) and how many days you have been here\\. Nothing else\\.$", "অন্যরা তোমার গোপন নাম, তোমার লিঙ্গ ({1}) আর তুমি কত দিন এখানে আছ সেটা দেখে। আর কিছু নয়।", "बाकी लोग आपका गुप्त नाम, आपका लिंग ({1}) और आप कितने दिन से यहाँ हैं, यही देखते हैं। और कुछ नहीं।"], ["^Interview toughness (\\d) of 5$", "ইন্টারভিউ কাঠিন্য ৫-এর মধ্যে {1}", "इंटरव्यू की कठिनाई 5 में से {1}"], ["^Joined as (.+)$", "{1} হিসেবে যোগ দিয়েছ", "{1} के रूप में जुड़े"]];
+  var I18N_GENDER = {"Woman": ["নারী", "महिला"], "Man": ["পুরুষ", "पुरुष"], "Non-binary": ["নন-বাইনারি", "नॉन-बाइनरी"], "Not shared": ["জানানো হয়নি", "बताया नहीं"], "Prefer not to say": ["বলতে চাই না", "बताना नहीं चाहते"]};
+
+  /* ---------- languages ----------
+     The app shows one language at a time. The person picks it from the menu in the top bar and the choice is remembered.
+     Screens are written in English; every screen is translated as it is drawn. Anything without a translation stays in English. */
+  var LANGS = [['en', 'English'], ['bn', 'বাংলা'], ['hi', 'हिन्दी']];
+  var LANG = 'en';
+  var LI = { bn: 0, hi: 1 };
+  var RULES = I18N_RULES.map(function (r) { return [new RegExp(r[0]), r[1], r[2]]; });
+  function loadLang() {
+    try { var v = localStorage.getItem('kanakani.lang'); if (v === 'en' || (v && I18N[v])) return v; } catch (e) { /* storage unavailable */ }
+    return 'en';
+  }
+  function trText(s) {
+    if (LANG === 'en') return null;
+    var d = I18N[LANG][s]; if (d !== undefined) return d;
+    var i = LI[LANG];
+    for (var k = 0; k < RULES.length; k++) {
+      var m = s.match(RULES[k][0]);
+      if (m) return RULES[k][1 + i].replace(/\{(\d)\}/g, function (_, n) { var g = m[+n] || ''; return I18N_GENDER[g] ? I18N_GENDER[g][i] : g; });
+    }
+    return null;
+  }
+  var TR_ATTRS = ['placeholder', 'aria-label', 'title'];
+  function xlateAttrs(el) {
+    for (var a = 0; a < TR_ATTRS.length; a++) {
+      var v = el.getAttribute(TR_ATTRS[a]); if (!v) continue;
+      var o = trText(v.trim()); if (o !== null && o !== v.trim()) el.setAttribute(TR_ATTRS[a], o);
+    }
+  }
+  function xlateText(n) {
+    var p = n.parentNode; if (p && (p.nodeName === 'SCRIPT' || p.nodeName === 'STYLE' || p.nodeName === 'OPTION' || p.nodeName === 'TEXTAREA')) return;
+    var raw = n.nodeValue, t = raw.trim(); if (!t) return;
+    var o = trText(t.replace(/\s+/g, ' ')); if (o !== null && o !== t) n.nodeValue = raw.replace(t, function () { return o; });
+  }
+  function xlate(node) {
+    if (LANG === 'en' || !node) return;
+    if (node.nodeType === 3) { xlateText(node); return; }
+    if (node.nodeType !== 1) return;
+    xlateAttrs(node);
+    var w = document.createTreeWalker(node, 5), n;
+    while ((n = w.nextNode())) { if (n.nodeType === 3) xlateText(n); else xlateAttrs(n); }
+  }
+  function langSelect() {
+    return '<select id="langsel" class="langsel" aria-label="Language">' + LANGS.map(function (l) {
+      return '<option value="' + l[0] + '"' + (l[0] === LANG ? ' selected' : '') + '>' + l[1] + '</option>';
+    }).join('') + '</select>';
+  }
+  function setLang(l) {
+    if (l !== 'en' && !I18N[l]) return;
+    var inp = $('#num'); if (inp && S.ob) S.ob.num = inp.value;
+    LANG = l; document.documentElement.lang = l;
+    try { localStorage.setItem('kanakani.lang', l); } catch (e) { /* storage unavailable */ }
+    render(); renderSheet();
+    var sel = $('#langsel'); if (sel) sel.focus();
+  }
+  LANG = loadLang(); document.documentElement.lang = LANG;
+
+  // Translate right after each draw so the English never flashes, and watch for later changes (chat messages, counters).
+  var _render = render, _renderOnboard = renderOnboard, _renderSheet = renderSheet;
+  render = function (k) { _render(k); xlate(root); };
+  renderOnboard = function () { _renderOnboard(); xlate(root); };
+  renderSheet = function () { _renderSheet(); xlate(layer); };
+  new MutationObserver(function (muts) {
+    if (LANG === 'en') return;
+    muts.forEach(function (m) {
+      if (m.type === 'childList') Array.prototype.forEach.call(m.addedNodes, xlate);
+      else if (m.type === 'characterData') xlateText(m.target);
+      else if (m.type === 'attributes') xlateAttrs(m.target);
+    });
+  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: TR_ATTRS });
+  document.addEventListener('change', function (e) { if (e.target && e.target.id === 'langsel') setLang(e.target.value); });
+
+  /* ---------- boot ---------- */
+  S.contacts = seedContacts();
+  S.rooms = seedRooms();
+  S.posts = seedPosts();
+  S.me = loadMe();
+  if (S.me && (!S.me.alias || typeof S.me.days !== 'number')) S.me = null;
+  if (S.me) {
+    S.me.gender = S.me.gender || 'Prefer not to say';
+    S.me.msgs = S.me.msgs || 0; S.me.likesGiven = S.me.likesGiven || 0; S.me.postCount = S.me.postCount || 0; S.me.settled = S.me.settled || 0; S.me.hits = S.me.hits || 0;
+  }
+  render();
+})();
+</script>

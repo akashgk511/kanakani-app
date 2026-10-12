@@ -1,0 +1,190 @@
+/* Kanakani styles. System fonts only, because the CSP blocks external fonts.
+   Light and dark follow the phone or browser setting. */
+:root {
+  --yellow: #F7B500;
+  --ink: #17162B;
+  --bg: #FFFBF0;
+  --card: #FFFFFF;
+  --line: #E8E1CC;
+  --text: #17162B;
+  --muted: #5E5B73;
+  --good: #1E7B4A;
+  --bad: #B3261E;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14132A;
+    --card: #1F1E3A;
+    --line: #34325A;
+    --text: #F4F1E6;
+    --muted: #B3B0CC;
+    --good: #5FD39A;
+    --bad: #FF8A80;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Bengali", "Noto Sans Devanagari", "Nirmala UI", "Kohinoor Bangla", "Kohinoor Devanagari", sans-serif;
+}
+a { color: inherit; }
+.app { max-width: 640px; margin: 0 auto; padding: 0 16px 48px; }
+main { display: block; }
+
+/* top bar and tabs */
+.top { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 8px; gap: 8px; }
+.logo { font-weight: 800; font-size: 1.4rem; text-decoration: none; letter-spacing: -.02em; }
+.logo small { margin-left: 8px; font-weight: 500; font-size: .8rem; color: var(--muted); }
+.chip { background: var(--yellow); color: var(--ink); border-radius: 999px; padding: 4px 12px; font-size: .85rem; font-weight: 600; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.tabs a { flex: 1; text-align: center; padding: 10px 0; text-decoration: none; color: var(--muted); font-weight: 600; border-bottom: 3px solid transparent; }
+.tabs a[aria-current="page"] { color: var(--text); border-bottom-color: var(--yellow); }
+
+/* text helpers */
+h1 { font-size: 1.8rem; line-height: 1.15; margin: 16px 0 8px; letter-spacing: -.02em; }
+.lead { color: var(--muted); }
+.small { font-size: .85rem; color: var(--muted); }
+.label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 24px 0 8px; font-weight: 700; }
+.empty { color: var(--muted); text-align: center; padding: 24px 0; }
+.err { color: var(--bad); font-size: .9rem; min-height: 1.2em; margin: 8px 0; }
+.notice { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--yellow); padding: 10px 12px; border-radius: 8px; }
+
+/* forms and buttons */
+.fieldlabel { display: block; font-weight: 600; margin: 12px 0 4px; }
+.field { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font: inherit; }
+.field:focus-visible, .btn:focus-visible, .mini:focus-visible, .vote:focus-visible, .act:focus-visible, .chipbtn:focus-visible, a:focus-visible {
+  outline: 3px solid var(--yellow); outline-offset: 2px;
+}
+textarea.field { resize: vertical; }
+.numrow { display: flex; gap: 8px; align-items: center; }
+.numrow .prefix { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); font-weight: 600; }
+.radios { border: 0; padding: 0; margin: 16px 0; display: grid; gap: 6px; }
+.radios legend { padding: 0; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: .9rem; margin: 8px 0; }
+.row2 { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.row2 .field { width: auto; flex: 1; }
+.line { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.btn { display: inline-block; background: var(--yellow); color: var(--ink); border: 0; border-radius: 999px; padding: 10px 20px; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
+.btn.block { display: block; width: 100%; margin-top: 12px; text-align: center; }
+.btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.btn.danger { background: var(--bad); color: #fff; margin-top: 12px; }
+.btn[disabled] { opacity: .6; cursor: wait; }
+.mini { background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 999px; padding: 4px 12px; font: inherit; font-size: .8rem; cursor: pointer; }
+.mini[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+
+/* composer and chips */
+.pcompose { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0; }
+.chipbtn { white-space: nowrap; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .85rem; background: var(--card); }
+.chipbtn[aria-current="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+@media (prefers-color-scheme: dark) { .chipbtn[aria-current="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); } }
+
+/* posts */
+.post { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+.phead { display: flex; align-items: center; gap: 10px; }
+.phead form { margin: 0; }
+.grow { flex: 1; min-width: 0; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--yellow); color: var(--ink); display: grid; place-items: center; font-weight: 800; flex: none; }
+.name { font-weight: 700; overflow-wrap: anywhere; }
+.sub { font-size: .8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.gpill, .pill, .tagp { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: .72rem; font-weight: 600; border: 1px solid var(--line); }
+.pill { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+.days { font-weight: 700; }
+.tagrow { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.stamp { border: 2px solid var(--muted); border-radius: 6px; padding: 0 8px; font-size: .72rem; font-weight: 800; text-transform: uppercase; transform: rotate(-2deg); }
+.stamp.true { color: var(--good); border-color: var(--good); }
+.stamp.busted { color: var(--bad); border-color: var(--bad); }
+.ptext { margin: 8px 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.belief { display: flex; gap: 8px; }
+.belief form { margin: 0; }
+.vote, .act { background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: .85rem; cursor: pointer; }
+.vote[aria-pressed="true"], .act[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+.vote[disabled], .act[disabled] { opacity: .5; cursor: not-allowed; }
+.act.static { border-color: transparent; cursor: default; }
+.settle { margin-top: 10px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; font-size: .85rem; }
+.settle form { display: inline-flex; gap: 6px; margin: 6px 6px 0 0; }
+.pfoot { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.pfoot form { margin: 0; }
+
+/* meters. progress is used instead of inline-styled bars because the CSP blocks inline styles. */
+progress { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border: 0; border-radius: 99px; background: var(--line); overflow: hidden; display: block; margin-top: 6px; }
+progress::-webkit-progress-bar { background: var(--line); }
+progress::-webkit-progress-value { background: var(--yellow); border-radius: 99px; }
+progress::-moz-progress-bar { background: var(--yellow); border-radius: 99px; }
+.bbar { height: 6px; }
+.meter { height: 6px; }
+
+/* ranks */
+.critnote { color: var(--muted); font-size: .9rem; margin: 4px 0; }
+.standing { font-weight: 700; margin: 4px 0 12px; }
+.podium { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 8px; align-items: end; margin: 16px 0; }
+.pod { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; padding: 10px 8px 0; text-align: center; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.pod.p1 { order: 2; border-color: var(--yellow); }
+.pod.p2 { order: 1; }
+.pod.p3 { order: 3; }
+.pn { font-weight: 700; font-size: .85rem; overflow-wrap: anywhere; }
+.psnip { font-size: .75rem; color: var(--muted); }
+.pv { font-weight: 800; }
+.pv small { font-weight: 500; color: var(--muted); }
+.stand { width: 100%; background: var(--yellow); color: var(--ink); font-weight: 800; padding: 8px 0; margin-top: 6px; }
+.pod.p1 .stand { padding: 18px 0; }
+.rlist { margin-top: 8px; }
+.rrow { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.rrow.you { background: color-mix(in srgb, var(--yellow) 18%, transparent); }
+.rank { width: 28px; text-align: center; font-weight: 800; color: var(--muted); }
+.rtop { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rval { font-weight: 800; text-align: right; }
+.rval small { display: block; font-weight: 500; color: var(--muted); font-size: .7rem; }
+
+/* jobs */
+.infocard, .detail { margin-top: 8px; }
+.infocard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; }
+.infocard .label { margin-top: 0; }
+.flow { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.flow span { background: var(--yellow); color: var(--ink); padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; }
+a.row { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.end { text-align: right; display: grid; gap: 2px; justify-items: end; }
+.wx { display: inline-flex; gap: 6px; align-items: center; font-size: .8rem; font-weight: 700; }
+.wx i { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.wx.sunny i { background: #F7B500; }
+.wx.cloudy i { background: #8E9AAF; }
+.wx.stormy i { background: #B3261E; }
+.wx.frozen i { background: #4DA3FF; }
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.steps li { display: flex; gap: 12px; }
+.sn { width: 26px; height: 26px; border-radius: 50%; background: var(--yellow); color: var(--ink); display: grid; place-items: center; font-weight: 800; font-size: .8rem; flex: none; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; font-weight: 600; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--line); margin-right: 3px; }
+.dot.on { background: var(--yellow); }
+.whisper { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+
+/* security page */
+.secrow { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.st { font-size: .75rem; font-weight: 800; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); }
+.st.on { color: var(--good); border-color: var(--good); }
+.st.part { color: #B7791F; border-color: #B7791F; }
+.wipe { margin-top: 24px; padding: 12px 16px; border: 1px solid var(--bad); border-radius: var(--radius); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* wishbox */
+.ballot { margin-top: 8px; }
+.ballot .belief { margin-top: 8px; }
+.idea .whisper { margin: 8px 0 0; }
+
+/* language links and Bengali / Hindi text. Wide letter-spacing would break joined letters apart. */
+.langs { display: flex; gap: 4px; margin-left: auto; }
+.langs a { text-decoration: none; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: .8rem; font-weight: 600; }
+.langs a[aria-current="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+.logo small { letter-spacing: 0; line-height: 1.5; }
+html[lang="bn"] *, html[lang="hi"] * { letter-spacing: normal !important; }
+html[lang="bn"] body, html[lang="hi"] body { line-height: 1.65; }
+
+/* Brand mark: use the supplied Kanakani bee/chat logo in the shared header. */
+.top .logo { display: inline-flex; align-items: center; gap: .65rem; text-decoration: none; font-weight: 800; letter-spacing: -.03em; }
+.top .logo img { display: block; width: 38px; height: 38px; object-fit: contain; border-radius: 50%; }
+.top .logo span { color: inherit; }
