@@ -1,0 +1,12 @@
+# Netlify only serves static files and serverless functions; it cannot run the
+# Java/Tomcat WAR. Publish the self-contained clickable prototype instead.
+[build]
+  # The UI "Base directory" was set to the GitHub URL; use the repo root instead.
+  base = ""
+  publish = "prototype"
+  command = ""
+
+[[redirects]]
+  from = "/"
+  to = "/kanakani.html"
+  status = 200
